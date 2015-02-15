@@ -1,12 +1,13 @@
 #include <PVision.h>
 #include <Servo.h>
 #include <Wire.h>
+#include <LiquidCrystal.h>
 //Test change
 
 PVision greenCam;
 
 
-int ledPin = 13;
+int ledPin = 5;
 byte greenCamResult;
 int numOfBlobs = 0;
 
@@ -18,9 +19,13 @@ boolean travelPhaseOver = false;
 boolean retrievalPhaseOver = false;
 
 
+LiquidCrystal lcd(7, 8, 9, 10, 11, 12);
+
 
 void setup()
 {
+  lcd.begin(16, 2);
+  
   pinMode(ledPin, OUTPUT);
   Serial.begin(9600);
   greenCam.init();
@@ -28,6 +33,7 @@ void setup()
 
 void loop()
 {
+  /*
   greenCamResult = greenCam.read();
   
   //if any blobs are found
@@ -36,6 +42,9 @@ void loop()
     numOfBlobs = CountBlobs();
     DisplayLocationsOfBlobs();
   }
+  */
+  
+  TestLEDBlink();
 }
 
 int CountBlobs()
@@ -101,7 +110,17 @@ void DisplayLocationsOfBlobs()
 void TestLEDBlink()
 {
   digitalWrite(ledPin, HIGH);
+  //set the cursor to column 0, line 1
+  lcd.setCursor(0, 1);
+  lcd.println("LED on");
+  lcd.setCursor(0, 2);
+  lcd.println("LED will be turning off soon");
   delay(1000);
+  
   digitalWrite(ledPin, LOW);
+  lcd.setCursor(0, 1);
+  lcd.println("LED off");
+  lcd.setCursor(0, 2);
+  lcd.println("LED will be turning on soon");
   delay(1000);
 }
