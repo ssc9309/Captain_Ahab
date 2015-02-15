@@ -47,6 +47,7 @@ void loop()
   TestLEDBlink();
 }
 
+//This function will return the number of Blobs currently seen by the camera
 int CountBlobs()
 {
   int count = 0;
@@ -71,6 +72,7 @@ int CountBlobs()
   return count;
 }
 
+//This function will just display the x y coordination of the available blobs
 void DisplayLocationsOfBlobs()
 {
   if (BLOB1)
@@ -106,6 +108,27 @@ void DisplayLocationsOfBlobs()
     Serial.println(greenCam.Blob4.Y);
   }
 }
+
+//This function will find the centre of lights and ask the motor to turn.
+void FaceTheLego()
+{
+  int legoX = 0;
+  if (numOfBlobs == 2)
+  {
+    legoX = greenCam.Blob1.X + greenCam.Blob2.X;
+    legoX /= 2;
+    
+    //if legoX is not straight, turn
+  }
+  else if (numOfBlobs == 1)
+  {
+    legoX = greenCam.Blob1.X;
+    
+    //if legoX is not straight, turn
+  }
+}
+
+
 
 void TestLEDBlink()
 {
