@@ -33,7 +33,7 @@ void setup()
 
 void loop()
 {
-  /*
+  
   greenCamResult = greenCam.read();
   
   //if any blobs are found
@@ -42,9 +42,9 @@ void loop()
     numOfBlobs = CountBlobs();
     DisplayLocationsOfBlobs();
   }
-  */
   
-  TestLEDBlink();
+  
+  //TestLEDBlink();
 }
 
 //This function will return the number of Blobs currently seen by the camera
