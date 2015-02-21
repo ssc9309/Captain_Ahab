@@ -29,11 +29,56 @@ void setup()
   pinMode(ledPin, OUTPUT);
   Serial.begin(9600);
   greenCam.init();
+  
+  //comment out the below if you don't want to test communication
+  TestCommunicationSetup();
 }
 
 void loop()
 {
   
+  TestCommunication();
+  
+  //TestGreenCam();
+  //TestLEDBlink();
+}
+
+void TestCommunicationSetup()
+{
+  //TX out of Arudino is Digital Pin 1
+  
+  //I think this is 4800. If doesn't work, use 2400
+  Serial.begin(4800);
+}
+
+void TestCommunication()
+{
+  int counter = 0;
+  int increment = 1;
+  
+  //counter goes up and down between 0 and 100
+  //send the counter to the receiver
+  //change counter every half second
+  while(true)
+  {
+    if(counter == 0)
+    {
+      increment = 1;
+    }
+    else if (counter == 100)
+    {
+      increment = -1;
+    }
+    
+    Serial.print(counter);
+    counter += increment;
+    
+    delay(500);
+  }
+}
+
+void TestGreenCam()
+{
   greenCamResult = greenCam.read();
   
   //if any blobs are found
@@ -42,9 +87,6 @@ void loop()
     numOfBlobs = CountBlobs();
     DisplayLocationsOfBlobs();
   }
-  
-  
-  //TestLEDBlink();
 }
 
 //This function will return the number of Blobs currently seen by the camera
