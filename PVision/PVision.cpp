@@ -59,12 +59,12 @@ void PVision::init ()
     
     Wire.begin();
     // IR sensor initialize
-    Write_2bytes(0x30,0x01); delay(10);
-    Write_2bytes(0x30,0x08); delay(10);
-    Write_2bytes(0x06,0x90); delay(10); //Block 1
-    Write_2bytes(0x08,0xC0); delay(10); //Block 1
-    Write_2bytes(0x1A,0x40); delay(10); //Block 2
-    Write_2bytes(0x33,0x33); delay(10);
+    Write_2bytes(0x30,0x01); delay(50); //For funsies?
+    Write_2bytes(0x30,0x08); delay(50); //Start init
+    Write_2bytes(0x06,0x90); delay(50); //Block 1
+    Write_2bytes(0x08,0xC0); delay(50); //Block 1
+    Write_2bytes(0x1A,0x40); delay(50); //Block 2
+    Write_2bytes(0x33,0x33); delay(50); //Define mode
     delay(100);
 }
 
