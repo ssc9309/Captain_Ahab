@@ -43,13 +43,27 @@ void PVision::init ()
     IRsensorAddress = 0xB0;
     IRslaveAddress = IRsensorAddress >> 1;   // This results in 0x21 as the address to pass to TWI
 
+    //use http://wiibrew.org/wiki/Wii_Remote#IR_Camera for sensitivity settings
+    //ex. Marcan setting
+    //Block 1                           Block 2
+    //00 00 00 00 00 00 90 00 C0        40 00
+    
+    //Block 1 starts from 0xb00000
+    //Block 2 starts from 0xb0001a
+    //To write 90 and C0 from Block 1, 90 is 7th bits and C0 is 9th
+    //Therefore write 0x90 to 0x06 (7th register from 0xb00000)
+    //Also write 0xC0 to 0x08 (9th register from 0xb00000)
+
+    //Same to write Block 2
+    //40 is first bits from 0xb0001a, therefore write 0x40 to 0x1A
+    
     Wire.begin();
     // IR sensor initialize
     Write_2bytes(0x30,0x01); delay(10);
     Write_2bytes(0x30,0x08); delay(10);
-    Write_2bytes(0x06,0x90); delay(10);
-    Write_2bytes(0x08,0xC0); delay(10);
-    Write_2bytes(0x1A,0x40); delay(10);
+    Write_2bytes(0x06,0x90); delay(10); //Block 1
+    Write_2bytes(0x08,0xC0); delay(10); //Block 1
+    Write_2bytes(0x1A,0x40); delay(10); //Block 2
     Write_2bytes(0x33,0x33); delay(10);
     delay(100);
 }
