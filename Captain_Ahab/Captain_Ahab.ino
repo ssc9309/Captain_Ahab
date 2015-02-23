@@ -31,15 +31,14 @@ void setup()
   greenCam.init();
   
   //comment out the below if you don't want to test communication
-  TestCommunicationSetup();
+  //TestCommunicationSetup();
 }
 
 void loop()
 {
   
-  TestCommunication();
-  
-  //TestGreenCam();
+  //TestCommunication();
+  TestGreenCam();
   //TestLEDBlink();
 }
 
@@ -79,17 +78,26 @@ void TestCommunication()
 
 void TestGreenCam()
 {
+  //greenCamResult is a byte
+  //if all are one the response is 00001111 = 15
   greenCamResult = greenCam.read();
   
+  Serial.print(millis());
+  Serial.print(" - greenCamResult: ");
+  Serial.println(greenCamResult, DEC);
+  
   //if any blobs are found
-  if (greenCamResult)
+  if (greenCamResult > 0)
   {
-    numOfBlobs = CountBlobs();
+    //numOfBlobs = CountBlobs();
     DisplayLocationsOfBlobs();
   }
+  
+  delay(250);
 }
 
 //This function will return the number of Blobs currently seen by the camera
+//obsolete because greenCam.read() gives you the number of blobs
 int CountBlobs()
 {
   int count = 0;
@@ -117,7 +125,7 @@ int CountBlobs()
 //This function will just display the x y coordination of the available blobs
 void DisplayLocationsOfBlobs()
 {
-  if (BLOB1)
+  if (greenCam.Blob1.Size > 0)
   {
     Serial.println("BLOB1");
     Serial.print("X: ");
@@ -125,7 +133,7 @@ void DisplayLocationsOfBlobs()
     Serial.print("Y: ");
     Serial.println(greenCam.Blob1.Y);
   }
-  if (BLOB2)
+  if (greenCam.Blob2.Size > 0)
   {
     Serial.println("BLOB2");
     Serial.print("X: ");
@@ -133,7 +141,7 @@ void DisplayLocationsOfBlobs()
     Serial.print("Y: ");
     Serial.println(greenCam.Blob2.Y);
   }
-  if (BLOB3)
+  if (greenCam.Blob3.Size > 0)
   {
     Serial.println("BLOB3");
     Serial.print("X: ");
@@ -141,7 +149,7 @@ void DisplayLocationsOfBlobs()
     Serial.print("Y: ");
     Serial.println(greenCam.Blob3.Y);
   }
-  if (BLOB4)
+  if (greenCam.Blob4.Size > 0)
   {
     Serial.println("BLOB4");
     Serial.print("X: ");
