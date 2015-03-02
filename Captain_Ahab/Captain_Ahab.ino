@@ -11,12 +11,19 @@ int ledPin = 5;
 byte greenCamResult;
 int numOfBlobs = 0;
 
-//Captain Ahab (rover) will be fired and lowered by Pequod (crane) during deployment phase.
-//He will then s
-boolean deploymentPhaseOver = false;
-boolean scanPhaseOver = false;
-boolean travelPhaseOver = false;
-boolean retrievalPhaseOver = false;
+
+//there are 5 phases total
+//1. Landing
+//2. Searching
+//3. Approaching
+//4. Rescuing
+//5. Recovering
+
+boolean landingPhase = false;
+boolean searchingPhase = false;
+boolean approachingPhase = false;
+boolean rescuingPhase = false;
+boolean recoveringPhase = false;
 
 
 LiquidCrystal lcd(7, 8, 9, 10, 11, 12);
