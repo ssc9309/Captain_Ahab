@@ -43,6 +43,7 @@ void setup()
 
 void loop()
 {
+  //if all are false, program just started. Therefore landing phase.
   if(!landingPhase && !searchingPhase && !approachingPhase && !rescuingPhase && !recoveringPhase)
   {
     landingPhase = true;
@@ -55,10 +56,123 @@ void loop()
     landingPhase = false;
     searchingPhase = true;
   }
+  //if it is searching phase now
+  else if (!landingPhase && searchingPhase && !approachingPhase && !rescuingPhase && !recoveringPhase)
+  {
+    //Counter Clockwise will be a positive turn
+    int numOfLightFound = 0;
+    int numOfDegreeTurned = 0;
+    int lightAngle1 = 0;
+    int lightAngle2 = 0;
+    
 
+    while(searchingPhase)
+    {
+      if(numOfDegreeTurned >= 360)
+      {
+        if (numOfLightFound == 0)
+        {
+          //move to a different location
+          // aka give up
+        }
+        //if you have seen only 1 light in 360 degrees, turn to it
+        //search phase over
+        else
+        {
+          searchingPhase = false;
+          TurnToLight(numOfLightFound, lightAngle1, lightAngle2);
+        }
+      }
+      else
+      {
+        //true if facing a light
+        if (AreYouFacingALight())
+        {
+          //if found the first light, record the angle
+          if(numOfLightFound == 0)
+          {
+            numOfLightFound++;
+            lightAngle1 = numOfDegreeTurned;
+          }
+          //if both lights are found, turn to it.
+          //searching phase over
+          else if (numOfLightFound == 1)
+          {
+            numOfLightFound++;
+            lightAngle2 = numOfDegreeTurned;
+            searchingPhase = false;
+            
+            TurnToLight(numOfLightFound, lightAngle1, lightAngle2);
+          }
+        }
+      }
+      
+      //if the search is still on, keep turning
+      if (searchingPhase)
+      {
+        //turn one degree.
+      }
+    }
+    
+    approachingPhase = true;
+  }
+
+  else if (!landingPhase && !searchingPhase && approachingPhase && !rescuingPhase && !recoveringPhase)
+  {
+    
+  }
   //TestCommunication();
   //TestGreenCam();
   //TestLEDBlink();
+}
+
+//if two lights have been seen, turn to the centre of them
+//if only one light has been found, turn directly to it.
+void TurnToLight(int numOfLight, int lightAngle1, int lightAngle2)
+{
+  int angleToTurn = 0;
+  
+  //if only one light has been seen, turn directly to it
+  //do enter this condition, assume that it has turned exactly 360 degrees
+  //which it had to have btw.
+  if(numOfLight == 1)
+  {
+    angleToTurn = 360 - lightAngle1;
+    
+    //if turning right is closer, then negative angle (clock wise turn = negative)
+    if (angleToTurn < 180)
+    {
+      angleToTurn = angleToTurn * -1;
+    }
+  }
+  
+  //if you have seen 2 lights, that means you must be facing the 2nd light right now.
+  //if not, I am dumb
+  else if (numOfLight == 2)
+  {
+    //calculate how much angle to turn to arrive that the mid point
+    angleToTurn = lightAngle2 - lightAngle1;
+    
+    //it is negative as it will have to always clock wise after seeing the second light.
+    angleToTurn = -angleToTurn / 2;
+  }
+  else
+  {
+    //if you are here, I don't know what to say.
+  }
+  
+  //TurnTheRover(int angleToTurn)
+}
+
+void AreYouFacingALight()
+{
+  //use the green cam and check if I am centered to a light in the x axis.
+  //you need to use sweet spot the tolerance to not miss the light but not overlap with the first one.
+  
+  //if facing a light
+  //  return true
+  
+  return false;
 }
 
 void TestCommunicationSetup()
