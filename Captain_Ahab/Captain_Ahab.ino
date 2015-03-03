@@ -43,9 +43,21 @@ void setup()
 
 void loop()
 {
-  
+  if(!landingPhase && !searchingPhase && !approachingPhase && !rescuingPhase && !recoveringPhase)
+  {
+    landingPhase = true;
+    //tell Pequod to pull the pin
+    //monitor accelerometer until stopped falling
+    //or should I monitor the servo for impact then weight load?
+    //tell Pequod to lower
+    //monitor accelerometer or servo
+    //complete the phase when reached the ground
+    landingPhase = false;
+    searchingPhase = true;
+  }
+
   //TestCommunication();
-  TestGreenCam();
+  //TestGreenCam();
   //TestLEDBlink();
 }
 
