@@ -167,7 +167,7 @@ void TurnToLight(int numOfLight, int lightAngle1, int lightAngle2)
   //TurnTheRover(int angleToTurn)
 }
 
-void AreYouFacingALight()
+bool AreYouFacingALight()
 {
   //use the green cam and check if I am centered to a light in the x axis.
   //you need to use sweet spot the tolerance to not miss the light but not overlap with the first one.
