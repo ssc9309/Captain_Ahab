@@ -147,6 +147,9 @@ void TurnToLight(int numOfLight, int lightAngle1, int lightAngle2)
   }
   
   //if you have seen 2 lights, that means you must be facing the 2nd light right now.
+  //hank. The 2nd light may not be the left light of the two. What if you start from seeing the left light first?
+  //Also speaking of which, what if you see the light after you land right away but on the right side?
+  //need to change flow chart
   //if not, I am dumb
   else if (numOfLight == 2)
   {
