@@ -1,7 +1,7 @@
 #include <NewPing.h>
 
-int trigPin = 3;
-int echoPin = 2;
+int trigPin = 12;
+int echoPin = 11;
 int maxDistance = 700; //maximum distance you want to see in cm
 long duration, distance;
 
@@ -46,6 +46,7 @@ void loop() {
   Serial.print("Ping: ");
   Serial.print(sonar.convert_cm(uS));
   Serial.println(" cm");
+  delay(1000);
   
 }
 
