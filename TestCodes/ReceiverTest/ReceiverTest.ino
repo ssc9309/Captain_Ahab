@@ -26,7 +26,7 @@ void setup()
   //Initialize the IO and ISR
   vw_set_ptt_inverted(true); // Required for DR3100
   vw_setup(2000);	    // Bits per sec
-  vw_set_rx_pin(receiverPin);         //Pin 2 is connected to "Digital Output" of receiver
+  //vw_set_rx_pin(receiverPin);         //Pin 2 is connected to "Digital Output" of receiver
   vw_rx_start();           // Start the receiver PLL running
   
   
@@ -61,6 +61,9 @@ void loop() {
   lcd.print(millis() / 1000);
 }
 
+
+int second = millis()/1000;
+
 void VirtualWareTest()
 {
   
@@ -89,7 +92,7 @@ void VirtualWareTest()
       /*
       //if character received matches, turn on associated LED
       if(buf[i] == '1'){
-        digitalWrite(8, HIGH);
+        digitalWrite(8, HIGH);  
       }
       if(buf[i] == '2'){
         digitalWrite(9, HIGH);
@@ -108,4 +111,13 @@ void VirtualWareTest()
     //Turn off status LED
     //digitalWrite(13, false);
   }
+  
+  if (second != millis()/1000)
+  {
+    Serial.println(second);
+    second = millis()/1000;
+  }
+  
+  
+  
 }
