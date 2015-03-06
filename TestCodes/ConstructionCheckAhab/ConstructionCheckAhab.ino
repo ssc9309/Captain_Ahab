@@ -60,17 +60,17 @@ void StepperSetup()
   pinMode(stepRPin, OUTPUT);
   pinMode(dirRPin, OUTPUT);
   
-  digitalWrite(m0RPin, LOW);
-  digitalWrite(m1RPin, LOW);
-  digitalWrite(dirRPin, HIGH);
+  digitalWrite(m0RPin, HIGH);
+  digitalWrite(m1RPin, HIGH);
+  digitalWrite(dirRPin, LOW);
   
   pinMode(m0LPin, OUTPUT);
   pinMode(m1LPin, OUTPUT);
   pinMode(stepLPin, OUTPUT);
   pinMode(dirLPin, OUTPUT);
   
-  digitalWrite(m0LPin, LOW);
-  digitalWrite(m1LPin, LOW);
+  digitalWrite(m0LPin, HIGH);
+  digitalWrite(m1LPin, HIGH);
   digitalWrite(dirLPin, HIGH);
 }
 
@@ -91,7 +91,7 @@ void loop()
   
   if (moveForward)
   {
-    MoveStepper(10);
+    MoveStepper(100);
     lastState = moveForward;
   }
   else
@@ -147,11 +147,11 @@ void MoveStepper(int steps)
   {
     digitalWrite(stepRPin, HIGH);
     digitalWrite(stepLPin, HIGH);
-    delay(1);
-    //delayMicroseconds(500);
+    //delay(1);
+    delayMicroseconds(500);
     digitalWrite(stepRPin, LOW);
     digitalWrite(stepLPin, LOW);
-    delay(1);
-    //delayMicroseconds(500);
+    //delay(1);
+    delayMicroseconds(500);
   }
 }
