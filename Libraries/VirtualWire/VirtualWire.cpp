@@ -11,7 +11,8 @@
 // Copyright (C) 2008 Mike McCauley
 // $Id: VirtualWire.cpp,v 1.4 2009/03/31 20:49:41 mikem Exp mikem $
 
-#include "WProgram.h"
+//#include "WProgram.h"
+#include "Arduino.h"
 #include "VirtualWire.h"
 #include <util/crc16.h>
 

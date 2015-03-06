@@ -11,7 +11,8 @@
 #define VirtualWire_h
 
 #include <stdlib.h>
-#include <wiring.h>
+//#include <wiring.h>
+#include <Arduino.h>
 
 // These defs cause trouble on some versions of Arduino
 #undef abs
