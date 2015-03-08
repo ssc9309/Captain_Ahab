@@ -6,6 +6,7 @@ static struct pt pt1, pt2;
 
 int globalCount = 0;
 int interval = 2000; //every 2 seconds
+int initialWait = 1000;
 void setup() 
 {
   // put your setup code here, to run once:
@@ -20,7 +21,7 @@ void loop()
 {
   // put your main code here, to run repeatedly:
   protoThread1(&pt1);
-  delay(1000);
+  //delay(1000);
   protoThread2(&pt2);
 }
 
@@ -41,8 +42,11 @@ static int protoThread1(struct pt *pt)
 
 static int protoThread2(struct pt *pt)
 {
-  static unsigned long timestamp = 0;
+  static unsigned long timestamp = millis();
   PT_BEGIN(pt);
+  
+  PT_WAIT_UNTIL(pt, millis() - timestamp > initialWait);
+  
   while(true)
   {
     PT_WAIT_UNTIL(pt, millis() - timestamp > interval);
