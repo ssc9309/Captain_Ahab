@@ -61,7 +61,7 @@ void StepperSetup()
   pinMode(dirRPin, OUTPUT);
   
   digitalWrite(m0RPin, HIGH);
-  digitalWrite(m1RPin, HIGH);
+  digitalWrite(m1RPin, LOW);
   digitalWrite(dirRPin, LOW);
   
   pinMode(m0LPin, OUTPUT);
@@ -70,7 +70,7 @@ void StepperSetup()
   pinMode(dirLPin, OUTPUT);
   
   digitalWrite(m0LPin, HIGH);
-  digitalWrite(m1LPin, HIGH);
+  digitalWrite(m1LPin, LOW);
   digitalWrite(dirLPin, HIGH);
 }
 
