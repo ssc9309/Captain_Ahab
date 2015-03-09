@@ -1,3 +1,12 @@
+#include <pt.h>
+
+static struct pt pt1, pt2;
+
+int globalCount = 0;
+int interval = 1000;
+int initialWait = 1000;
+
+
 //m0 low and m1 low mean Full step.
 //m0 high and m1 low mean Half step.
 //m0 high and m1 high mean 1/16th step.
@@ -19,6 +28,16 @@ void setup()
 {
   // put your setup code here, to run once:
 
+  StepperSetup();
+  
+  Serial.begin(9600);
+  
+  PT_INIT(&pt1)
+  PT_INIT(&pt2)
+}
+
+void StepperSetup()
+{
   pinMode(m0RPin, OUTPUT);
   pinMode(m1RPin, OUTPUT);
   pinMode(stepRPin, OUTPUT);
@@ -38,16 +57,9 @@ void setup()
   digitalWrite(dirLPin, HIGH);
 }
 
+
 void loop() 
 {
   // put your main code here, to run repeatedly:
-  digitalWrite(stepRPin, HIGH);
-  digitalWrite(stepLPin, HIGH);
-  delay(1);
-  //delayMicroseconds(125);
-  
-  digitalWrite(stepRPin, LOW);
-  digitalWrite(stepLPin, LOW);
-  delay(1);
-  //delayMicroseconds(125);
+
 }
