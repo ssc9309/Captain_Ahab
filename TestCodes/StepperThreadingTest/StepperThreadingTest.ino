@@ -58,8 +58,43 @@ void StepperSetup()
 }
 
 
+bool moveForwardFlag = false;
+
 void loop() 
 {
   // put your main code here, to run repeatedly:
+  CheckSensorThread(&pt2);
+  MoveThread(&pt1);
+}
 
+static int MoveThread(struct pt *pt)
+{
+  PT_BEGIN(pt);
+
+  while(true)
+  {
+    if(moveForwardFlag)
+    {
+      digitalWrite(stepRPin, HIGH);
+      digitalWrite(stepLPin, HIGH);
+      delay(1);
+      //delayMicroseconds(125);
+  
+      digitalWrite(stepRPin, LOW);
+      digitalWrite(stepLPin, LOW);
+      delay(1);
+    }
+  }
+
+  PT_END(pt);
+}
+
+static int CheckSensorThread(struct pt *pt)
+{
+  PT_BEGIN(pt);
+  while(true)
+  {
+    
+  }
+  PT_END(pt);  
 }
