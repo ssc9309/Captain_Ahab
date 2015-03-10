@@ -12,6 +12,7 @@ void setup() {
   Serial.begin(9600);
   Serial.println("Setup");
   greenCam.init();
+  Serial.println("Setup end");
 }
 
 void loop() 
