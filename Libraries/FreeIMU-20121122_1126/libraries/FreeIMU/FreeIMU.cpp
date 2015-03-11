@@ -94,8 +94,10 @@ FreeIMU::FreeIMU() {
 
 void FreeIMU::init() {
   #if HAS_ITG3200()
+  Serial.println("Init path 1");
   init(FIMU_ACC_ADDR, FIMU_ITG3200_DEF_ADDR, false);
   #else
+  Serial.println("Init path 2");
   init(FIMU_ACCGYRO_ADDR, false);
   #endif
 }
@@ -117,17 +119,20 @@ void FreeIMU::init(int acc_addr, int gyro_addr, bool fastmode) {
 #else
 void FreeIMU::init(int accgyro_addr, bool fastmode) {
 #endif
+  Serial.println("init with 2 input");
   delay(5);
   
   // disable internal pullups of the ATMEGA which Wire enable by default
   #if defined(__AVR_ATmega168__) || defined(__AVR_ATmega8__) || defined(__AVR_ATmega328P__)
     // deactivate internal pull-ups for twi
     // as per note from atmega8 manual pg167
+	Serial.println("Init path a");
     cbi(PORTC, 4);
     cbi(PORTC, 5);
   #else
     // deactivate internal pull-ups for twi
     // as per note from atmega128 manual pg204
+	Serial.println("Init path b");
     cbi(PORTD, 0);
     cbi(PORTD, 1);
   #endif
@@ -138,8 +143,11 @@ void FreeIMU::init(int accgyro_addr, bool fastmode) {
   
   #if HAS_ADXL345()
     // init ADXL345
+	Serial.println("Init acc. 345");
     acc.init(acc_addr);
   #elif HAS_BMA180()
+  
+    Serial.println("Init acc 180");
     // init BMA180
     acc.setAddress(acc_addr);
     acc.SoftReset();
@@ -153,6 +161,7 @@ void FreeIMU::init(int accgyro_addr, bool fastmode) {
 
   #if HAS_ITG3200()
   // init ITG3200
+  Serial.println("Init Gyro");
   gyro.init(gyro_addr);
   delay(1000);
   // calibrate the ITG3200
@@ -161,6 +170,7 @@ void FreeIMU::init(int accgyro_addr, bool fastmode) {
   
   
   #if HAS_MPU6050()
+  Serial.println("Init MPU6050");
   accgyro = MPU60X0(false, accgyro_addr);
   accgyro.initialize();
   accgyro.setI2CMasterModeEnabled(0);
@@ -170,6 +180,7 @@ void FreeIMU::init(int accgyro_addr, bool fastmode) {
   #endif
   
   #if HAS_MPU6000()
+  Serial.println("Init MPU6000");
   accgyro = MPU60X0(true, accgyro_addr);
   accgyro.initialize();
   accgyro.setFullScaleGyroRange(MPU60X0_GYRO_FS_2000);
@@ -179,6 +190,7 @@ void FreeIMU::init(int accgyro_addr, bool fastmode) {
   
   #if HAS_HMC5883L()
   // init HMC5843
+  Serial.println("Init mag");
   magn.init(false); // Don't set mode yet, we'll do that later on.
   // Calibrate HMC using self test, not recommended to change the gain after calibration.
   magn.calibrate(1); // Use gain 1=default, valid 0-7, 7 not recommended.
