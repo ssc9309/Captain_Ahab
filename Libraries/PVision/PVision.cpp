@@ -40,6 +40,10 @@ PVision::PVision()
 // init the PVision sensor
 void PVision::init ()
 {
+    //Hank Test code
+    Serial.println("PVision init");
+    //Hank test code end
+
     IRsensorAddress = 0xB0;
     IRslaveAddress = IRsensorAddress >> 1;   // This results in 0x21 as the address to pass to TWI
 
@@ -57,7 +61,12 @@ void PVision::init ()
     //Same to write Block 2
     //40 is first bits from 0xb0001a, therefore write 0x40 to 0x1A
     
+    Serial.println("PVision init: wire begin");
+    
     Wire.begin();
+
+    Serial.println("PVision init: IR initialize");
+
     // IR sensor initialize
     Write_2bytes(0x30,0x01); delay(50); //For funsies?
     Write_2bytes(0x30,0x08); delay(50); //Start init
@@ -66,6 +75,8 @@ void PVision::init ()
     Write_2bytes(0x1A,0x40); delay(50); //Block 2
     Write_2bytes(0x33,0x33); delay(50); //Define mode
     delay(100);
+
+    Serial.println("PVision end of init");
 }
 
 byte PVision::read()

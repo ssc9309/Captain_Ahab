@@ -35,14 +35,18 @@ void setup()
   
   pinMode(ledPin, OUTPUT);
   Serial.begin(9600);
+  Serial.println("Setup");
   greenCam.init();
   
   //comment out the below if you don't want to test communication
   //TestCommunicationSetup();
+  
+  Serial.println("Setup done");
 }
 
 void loop()
 {
+  /*
   //if all are false, program just started. Therefore landing phase.
   if(!landingPhase && !searchingPhase && !approachingPhase && !rescuingPhase && !recoveringPhase)
   {
@@ -121,8 +125,9 @@ void loop()
   {
     
   }
+  */
   //TestCommunication();
-  //TestGreenCam();
+  TestGreenCam();
   //TestLEDBlink();
 }
 
