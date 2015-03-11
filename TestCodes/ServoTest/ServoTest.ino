@@ -15,9 +15,34 @@ void setup()
   pinMode(servoPin, OUTPUT);
 }
 
+//  int onPulse = 2400; //2400 is maximum speed, 600 maximum other way
+int onPulse = (2400 + 600)/2; //the middle is stop
+  //int onPulse = 1200;
+int offPulse = 20000 - onPulse; //one cycle is 20000 microseconds long
+
 void loop()
 {
-    int current = 0;
+  //pulses are in microseconds
+  digitalWrite(servoPin, HIGH);
+  delayMicroseconds(onPulse);
+  digitalWrite(servoPin, LOW);
+  delayMicroseconds(offPulse);
+  
+  unsigned long average = 0;
+  for (int x = 0; x < 100; x++)
+  {
+    average += analogRead(A3);
+  }
+  average /= 100;
+  
+  Serial.print(millis());
+  Serial.print(": ");
+  Serial.println(average);
+}
+
+void ThisWasOnlyApplicableToNonContinuousServ0()
+{
+      int current = 0;
     for(current = first; current <end; current+=increment){
               Serial.println(current);
          // Servos work by sending a 25 ms pulse.  
@@ -58,5 +83,4 @@ void loop()
          // send the next signal too soon or too late
          delayMicroseconds(lenMicroSecondsOfPeriod - current);
     }
-
 }
