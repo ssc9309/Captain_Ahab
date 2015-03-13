@@ -172,6 +172,7 @@ void loop()
   */
   //TestCommunication();
   
+  /*
   my3IMU.getYawPitchRoll(ypr);
   Serial.print("Yaw: ");
   Serial.print(ypr[0]);
@@ -180,7 +181,7 @@ void loop()
   Serial.print(" Roll: ");
   Serial.print(ypr[2]);
   Serial.println("");
-  
+  */
   
   TestGreenCam();
   //TestLEDBlink();
