@@ -147,17 +147,28 @@ void loop()
     //if the distance was less than 30 cm, turn left.
     if (distanceInCm < 30)
     {
-      stepperDirection = 'l';
+      if (stepperDirection != 'l')
+      {
+        stepperDirection = 'l';
+        SendDataToPequod("hsl");
+      }    
     }
     else if (digitalRead(tiltPin) == LOW)
     {
-      stepperDirection = 's';
-      SendDataToPequod("s");
+      if (stepperDirection != 's')
+      {
+        stepperDirection = 's';
+        SendDataToPequod("hss");
+      }
       TurnServo();
     }
     else
     {
-      stepperDirection = 'f';
+      if (stepperDirection != 'f')
+      {
+        stepperDirection = 'f';
+        SendDataToPequod("hsf");
+      }
     }
   }
 }
@@ -297,6 +308,8 @@ void TurnServo()
   }
 }
 
+//string
+//always have two letters as hs
 void SendDataToPequod(char *msg)
 {
   vw_send((uint8_t *)msg, strlen(msg));
