@@ -12,13 +12,15 @@
 #include <NewPing.h>
 #include <pt.h>
 
-//Threading
+//Threading variables
+
 //pt1 = motordrive
 static struct pt pt1, pt2, pt3;
 int stepperSpeed = 350; //in us up to 1500 Hz (300 us)
-char stepperDirection = 's'; //s = stop, f = forward, r = right, l = left, b = back
+char stepperDirection = 'f'; //s = stop, f = forward, r = right, l = left, b = back
 
-//Stepper
+//Stepper Variables
+
 //m0 low and m1 low mean Full step.
 //m0 high and m1 low mean Half step.
 //m0 high and m1 high mean 1/16th step.
@@ -33,7 +35,9 @@ int m1LPin = 8;
 int stepLPin = 7;
 int dirLPin = 6;
 
-
+//Ultrasonic Variables
+int trigPin = 12;
+int echoPin = 11;
 
 
 void setup() 
@@ -46,6 +50,7 @@ void setup()
   
   ThreadingSetup();
   StepperSetup();
+  SonarSetup();
   
   Serial.println("Setup Done");
 }
@@ -86,12 +91,20 @@ void StepperSetup()
   Serial.println("Stepper Setup Done");
 }
 
+void SonarSetup()
+{
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+}
+
 
 //------------------Functional code----------------------------
 void loop() 
 {
   // put your main code here, to run repeatedly:
   AhabMovementThread(&pt1);
+  CheckSonar(&pt2);
+  
 }
 
 static int AhabMovementThread(struct pt *pt)
@@ -172,3 +185,35 @@ bool SetStepperDirection()
     return false;
   }
 }
+
+static int CheckSonar(struct pt *pt)
+{
+  static unsigned long pingTime = 0;
+  static unsigned long echoTime = 0;
+  int distanceInCm = -1;
+  static bool pinged = false;
+  
+  PT_BEGIN(pt);
+  
+  PT_WAIT_UNTIL(pt, micros() - pingTime > stepperSpeed);
+  
+  //send a ping only if a ping hasn't been sent yet
+  if (!pinged)
+  {
+    pinged = true;
+    digitalWrite(trigPin, HIGH);
+    pingTime = micros();
+  }
+  //PT_WAIT_UNTIL(pt, micros() - timeStamp > stepperSpeed);
+  
+  
+  
+  
+  
+  PT_END(pt);
+}
+
+
+
+
+
