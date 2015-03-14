@@ -1,15 +1,16 @@
+//don't forget to take out all serial.print when finished
+
+
 //The rover will go straight
 //Until wall is found.
 //Then turn until no wall is seen
-//Also continuously update blob data
 //Stop motor if rover is tilted, and turn servo
 //Talk dirty to Pequod.
 
 #include <Wire.h>
-#include <PVision.h>
 #include <VirtualWire.h>
 #include <ServoTimer2.h>
-#include <NewPing.h>
+//#include <NewPing.h>
 #include <pt.h>
 
 //Threading variables
@@ -38,6 +39,17 @@ int dirLPin = 6;
 //Ultrasonic Variables
 int trigPin = 12;
 int echoPin = 11;
+int distanceInCm = -1;
+
+//tilt sensor Variables
+int tiltPin = A2;
+
+//Servo variables
+int servoPin = 10;
+ServoTimer2 grabberServo;
+
+//Transmitter Variables;
+int transPin = 13;
 
 
 void setup() 
@@ -51,6 +63,10 @@ void setup()
   ThreadingSetup();
   StepperSetup();
   SonarSetup();
+  TiltSetup();
+  ServoSetup();
+  TransmitterSetup();
+  
   
   Serial.println("Setup Done");
 }
@@ -97,14 +113,53 @@ void SonarSetup()
   pinMode(echoPin, INPUT);
 }
 
+void TiltSetup()
+{
+  pinMode(tiltPin, INPUT);
+}
+
+void ServoSetup()
+{
+  //pinMode(servoPin, OUTPUT);
+  grabberServo.attach(servoPin);
+  
+  //ex. grabberServo.write(pulsewidth in microseconds); 600 - 2400
+}
+
+void TransmitterSetup()
+{
+  vw_set_ptt_inverted(true); // Required for DR3100
+  vw_set_tx_pin(transPin);
+  vw_setup(2000);	 // Bits per sec
+}
+
 
 //------------------Functional code----------------------------
 void loop() 
 {
   // put your main code here, to run repeatedly:
   AhabMovementThread(&pt1);
-  CheckSonar(&pt2);
+  CheckSonarThread(&pt2);
   
+  //if there was a distance feedback
+  if (distanceInCm != -1)
+  {
+    //if the distance was less than 30 cm, turn left.
+    if (distanceInCm < 30)
+    {
+      stepperDirection = 'l';
+    }
+    else if (digitalRead(tiltPin) == LOW)
+    {
+      stepperDirection = 's';
+      SendDataToPequod("s");
+      TurnServo();
+    }
+    else
+    {
+      stepperDirection = 'f';
+    }
+  }
 }
 
 static int AhabMovementThread(struct pt *pt)
@@ -186,34 +241,64 @@ bool SetStepperDirection()
   }
 }
 
-static int CheckSonar(struct pt *pt)
+static int CheckSonarThread(struct pt *pt)
 {
   static unsigned long pingTime = 0;
   static unsigned long echoTime = 0;
-  int distanceInCm = -1;
+  distanceInCm = -1;
   static bool pinged = false;
   
   PT_BEGIN(pt);
   
-  PT_WAIT_UNTIL(pt, micros() - pingTime > stepperSpeed);
-  
-  //send a ping only if a ping hasn't been sent yet
+  //send a ping only if a ping hasn't been sent yet  
   if (!pinged)
   {
     pinged = true;
     digitalWrite(trigPin, HIGH);
     pingTime = micros();
   }
+  else
+  {
+    //100000 us is longer than 7 meters
+    if (micros() - pingTime > 100000)
+    {
+      Serial.println("Out of range (7m)");
+      pinged = false;
+    }
+    
+    PT_WAIT_UNTIL(pt, digitalRead(echoPin) == HIGH);
+    echoTime = micros();
+    pinged = false;
+    
+    distanceInCm = (echoTime - pingTime)/2;
+    distanceInCm /= 1000000;
+    distanceInCm *= 34000;
+    
+    Serial.print("Distance: ");
+    Serial.print(distanceInCm);
+    Serial.println(" cm");
+  }
   //PT_WAIT_UNTIL(pt, micros() - timeStamp > stepperSpeed);
-  
-  
-  
-  
   
   PT_END(pt);
 }
 
+void TurnServo()
+{
+  for(int x = 600; x < 2400; x++)
+  {
+    grabberServo.write(x);
+    delay(1);
+  }
+  for(int x = 2400; x >= 600; x--)
+  {
+    grabberServo.write(x);
+    delay(1);
+  }
+}
 
-
-
-
+void SendDataToPequod(char *msg)
+{
+  vw_send((uint8_t *)msg, strlen(msg));
+  vw_wait_tx(); // Wait until the whole message is gone
+}
