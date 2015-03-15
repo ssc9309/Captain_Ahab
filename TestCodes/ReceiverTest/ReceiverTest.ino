@@ -4,20 +4,20 @@
 //following link for lcd screen
 //http://www.instructables.com/id/Connecting-an-LCD-to-the-Arduino/
 
-#include <LiquidCrystal.h>
+//#include <LiquidCrystal.h>
 #include <VirtualWire.h>
 
 
 int incomingByte = 0;
-int receiverPin = 8;
+int receiverPin = 12;
 
 // initialize the library with the numbers of the interface pins
-LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
+//LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
 
 void setup() 
 {
   // put your setup code here, to run once:
-  lcd.begin(16, 2);
+  //lcd.begin(16, 2);
   
   //pretty sure our model is 4800. If this doesn't work, use 2400
   Serial.begin(9600);
@@ -25,9 +25,9 @@ void setup()
   
   //Initialize the IO and ISR
   vw_set_ptt_inverted(true); // Required for DR3100
-  vw_setup(2000);	    // Bits per sec
-  //vw_set_rx_pin(receiverPin);         //Pin 2 is connected to "Digital Output" of receiver
-  vw_rx_start();           // Start the receiver PLL running
+  vw_set_rx_pin(receiverPin);  
+  vw_setup(2000);	 // Bits per sec
+  vw_rx_start();       // Start the receiver PLL running
   
   
 }
@@ -56,9 +56,9 @@ void loop() {
   
   // set the cursor to column 0, line 1
   // (note: line 1 is the second row, since counting begins with 0):
-  lcd.setCursor(0, 1);
+  //lcd.setCursor(0, 1);
   // print the number of seconds since reset:
-  lcd.print(millis() / 1000);
+  //lcd.print(millis() / 1000);
 }
 
 
@@ -86,6 +86,7 @@ void VirtualWareTest()
       
       // Print message received in buffer through this loop
       Serial.print(buf[i]);
+      Serial.print(" ");
       //add space to distinguish characters from each other if showing ASCII decimal #
       //Serial.print(" "); 
       

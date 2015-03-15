@@ -6,15 +6,15 @@
 
 
 
-int m0RPin = 4;
-int m1RPin = 5;
-int stepRPin = 2;
-int dirRPin = 3;
+int m0RPin = 11;
+int m1RPin = 10;
+int stepRPin = 9;
+int dirRPin = 8;
 
-int m0LPin = 9;
-int m1LPin = 8;
-int stepLPin = 7;
-int dirLPin = 6;
+int m0LPin = 4;
+int m1LPin = 5;
+int stepLPin = 6;
+int dirLPin = 7;
 
 
 void setup() 

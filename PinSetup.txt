@@ -1,0 +1,20 @@
+Stepper Left
+M0  D4
+M1   D5
+Step D6
+Dir D7
+
+Stepper Right
+M0 D11
+M1 D10
+Step D9
+Dir D8
+
+Tx D2
+Servo D3
+
+Tilt Sensor A3
+
+Ultrasonic
+Trig A5
+Echo A4

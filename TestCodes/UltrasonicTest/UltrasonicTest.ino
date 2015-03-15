@@ -1,19 +1,36 @@
 #include <NewPing.h>
+#include <VirtualWire.h>
 
-int trigPin = 12;
-int echoPin = 11;
+int trigPin = A5;
+int echoPin = A4;
 int maxDistance = 700; //maximum distance you want to see in cm
 long duration, distance;
+
+int transPin = 2;
+
 
 NewPing sonar(trigPin, echoPin, maxDistance);
 
 void setup() 
 {
+  Serial.begin(9600);
   // put your setup code here, to run once:
 
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
-  Serial.begin(9600);
+  
+  TransmitterSetup();
+  
+}
+
+
+void TransmitterSetup()
+{
+  vw_set_ptt_inverted(true); // Required for DR3100
+  vw_set_tx_pin(transPin);
+  vw_setup(2000);	 // Bits per sec
+  
+  SendDataToPequod("Setup");
 }
 
 void loop() {
@@ -46,9 +63,24 @@ void loop() {
   Serial.print("Ping: ");
   Serial.print(sonar.convert_cm(uS));
   Serial.println(" cm");
+  
+  //SendDataToPequod(String(sonar.convert_cm(uS)));
+  //SendDataToPequod((char*)sonar.convert_cm(uS));
+  SendDataToPequod("Hello");
+  
   delay(1000);
   
 }
+
+void SendDataToPequod(char *msg)
+{
+  Serial.print("Sending: ");
+  Serial.println(msg);
+  
+  vw_send((uint8_t *)msg, strlen(msg));
+  vw_wait_tx(); // Wait until the whole message is gone
+}
+
 
 void TestPins()
 {

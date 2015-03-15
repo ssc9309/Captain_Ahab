@@ -26,30 +26,30 @@ char stepperDirection = 'f'; //s = stop, f = forward, r = right, l = left, b = b
 //m0 high and m1 low mean Half step.
 //m0 high and m1 high mean 1/16th step.
 //Right LOW, left HIGH = straight
-int m0RPin = 4;
-int m1RPin = 5;
-int stepRPin = 2;
-int dirRPin = 3;
+int m0RPin = 11;
+int m1RPin = 10;
+int stepRPin = 9;
+int dirRPin = 8;
 
-int m0LPin = 9;
-int m1LPin = 8;
-int stepLPin = 7;
-int dirLPin = 6;
+int m0LPin = 4;
+int m1LPin = 5;
+int stepLPin = 6;
+int dirLPin = 7;
 
 //Ultrasonic Variables
-int trigPin = 12;
-int echoPin = 11;
+int trigPin = A5;
+int echoPin = A4;
 int distanceInCm = -1;
 
 //tilt sensor Variables
-int tiltPin = A2;
+int tiltPin = A3;
 
 //Servo variables
-int servoPin = 10;
+int servoPin = 3;
 ServoTimer2 grabberServo;
 
 //Transmitter Variables;
-int transPin = 13;
+int transPin = 2;
 
 
 void setup() 
@@ -57,7 +57,7 @@ void setup()
   // put your setup code here, to run once:
   
   Serial.begin(9600);
-  Serial.println("Setup Start");
+//  Serial.println("Setup Start");
   
   
   ThreadingSetup();
@@ -68,23 +68,23 @@ void setup()
   TransmitterSetup();
   
   
-  Serial.println("Setup Done");
+//  Serial.println("Setup Done");
 }
 
 void ThreadingSetup()
 {
-  Serial.println("Threading Setup Start");
+//  Serial.println("Threading Setup Start");
   
   PT_INIT(&pt1);
   PT_INIT(&pt2);
   PT_INIT(&pt3);
   
-  Serial.println("Threading Setup Done");
+//  Serial.println("Threading Setup Done");
 }
 
 void StepperSetup()
 {
-  Serial.println("Stepper Setup Start");
+//  Serial.println("Stepper Setup Start");
   
   pinMode(m0RPin, OUTPUT);
   pinMode(m1RPin, OUTPUT);
@@ -104,7 +104,7 @@ void StepperSetup()
   digitalWrite(m1LPin, LOW);
   digitalWrite(dirLPin, HIGH);
   
-  Serial.println("Stepper Setup Done");
+//  Serial.println("Stepper Setup Done");
 }
 
 void SonarSetup()
@@ -140,8 +140,21 @@ void loop()
   // put your main code here, to run repeatedly:
   AhabMovementThread(&pt1);
   CheckSonarThread(&pt2);
-  
+
+/*  
+  //if it's tilted, stop
+  if (digitalRead(tiltPin) == HIGH)
+  {
+    if (stepperDirection != 's')
+    {
+      stepperDirection = 's';
+      SendDataToPequod("hss");
+    }
+    TurnServo();
+  }
+*/
   //if there was a distance feedback
+  //else if (distanceInCm != -1)
   if (distanceInCm != -1)
   {
     //if the distance was less than 30 cm, turn left.
@@ -152,15 +165,6 @@ void loop()
         stepperDirection = 'l';
         SendDataToPequod("hsl");
       }    
-    }
-    else if (digitalRead(tiltPin) == LOW)
-    {
-      if (stepperDirection != 's')
-      {
-        stepperDirection = 's';
-        SendDataToPequod("hss");
-      }
-      TurnServo();
     }
     else
     {
@@ -212,36 +216,36 @@ bool SetStepperDirection()
   {
     if (stepperDirection == 'f')
     {
-      Serial.print(millis());
-      Serial.println(": Direction Forward");
+//      Serial.print(millis());
+//      Serial.println(": Direction Forward");
       digitalWrite(dirRPin, LOW);
       digitalWrite(dirLPin, HIGH);
     }
     else if (stepperDirection == 'r')
     {
-      Serial.print(millis());
-      Serial.println(": Direction Right");
+//      Serial.print(millis());
+//      Serial.println(": Direction Right");
       digitalWrite(dirRPin, HIGH);
       digitalWrite(dirLPin, HIGH);
     }
     else if (stepperDirection == 'l')
     {
-      Serial.print(millis());
-      Serial.println(": Direction Left");
+//      Serial.print(millis());
+//      Serial.println(": Direction Left");
       digitalWrite(dirRPin, LOW);
       digitalWrite(dirLPin, LOW);
     }
     else if (stepperDirection == 'b')
     {
-      Serial.print(millis());
-      Serial.println(": Direction Back");
+//      Serial.print(millis());
+//      Serial.println(": Direction Back");
       digitalWrite(dirRPin, LOW);
       digitalWrite(dirLPin, LOW);
     }
     else
     {
-      Serial.print(millis());
-      Serial.println(": I am lost in setting direction");
+//      Serial.print(millis());
+//      Serial.println(": I am lost in setting direction");
     }
     
     return true;
