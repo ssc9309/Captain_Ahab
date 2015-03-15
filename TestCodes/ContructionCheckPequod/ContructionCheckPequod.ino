@@ -1,5 +1,6 @@
 #include <VirtualWire.h>
 #include <LiquidCrystal.h>
+#include <ServoTimer2.h>
 
 
 LiquidCrystal lcd(13, 11, 5, 4, 3, 2);
@@ -9,7 +10,7 @@ int servoPin = 7;
 
 int timer = 0;
 
-
+ServoTimer2 reelerServo;
 
 
 void setup() 
@@ -21,7 +22,8 @@ void setup()
   Serial.println("setup");
 
 
-  pinMode(servoPin, HIGH);
+  //pinMode(servoPin, HIGH);
+  reelerServo.attach(servoPin);
   
   //Receiver Setup
   // Initialise the IO and ISR
@@ -64,7 +66,8 @@ void loop()
     //100 is 0x64, which is lower case d
     if (dataReceived.substring(0, 3) == "100")
     {
-      RunServo();
+      //RunServo();
+      SetServoSpeed();
     }
   }
     
@@ -133,4 +136,9 @@ void RunServo()
          // send the next signal too soon or too late
     delayMicroseconds(lenMicroSecondsOfPeriod - current);
   }
+}
+
+void SetServoSpeed()
+{
+  
 }
