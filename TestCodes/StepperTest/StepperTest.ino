@@ -53,14 +53,15 @@ void loop()
     digitalWrite(stepRPin, HIGH);
     digitalWrite(stepLPin, HIGH);
     //delay(1);
-    delayMicroseconds(300/8 + 2*analogRead(A1));
+    delayMicroseconds(300/4);
+    //delayMicroseconds(300/8 + 2*analogRead(A1));
     //300/8 + 2*242 full step was the fastest speed
     //0.0007 / 2 = 0.00035
     digitalWrite(stepRPin, LOW);
     digitalWrite(stepLPin, LOW);
     //delay(1);
-    
-    delayMicroseconds(300/8 + 2*analogRead(A1));
+    delayMicroseconds(300/4);
+    //delayMicroseconds(300/8 + 2*analogRead(A1));
   }
   
 }

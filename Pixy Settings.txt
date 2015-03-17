@@ -1,0 +1,9 @@
+Orange lego.
+
+sig range 1.0
+brightness 50
+block 5
+ = 50 cm detection
+
+
+
