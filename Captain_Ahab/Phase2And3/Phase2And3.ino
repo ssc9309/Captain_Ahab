@@ -16,6 +16,7 @@ pixy.blocks[i].print() A member function that prints the detected object informa
 
 #include <SPI.h>
 #include <Pixy.h>
+#include <NewPing.h>
 
 //Stepper Pin
 int m0RPin = 11;
@@ -35,8 +36,15 @@ int dirLPin = 7;
 
 Pixy pixy;
 
-char stepperDirection = 's'; //s, f, l, r, b
+char stepperDirection = 'r'; //s, f, l, r, b
 
+
+//ultrasonic variables.
+int trigPin = A5;
+int echoPin = A4;
+int maxDistance = 700; //maximum distance you want to see in cm
+long duration, distance;
+NewPing sonar(trigPin, echoPin, maxDistance);
 
 
 void setup() 
@@ -49,7 +57,7 @@ void setup()
   pixy.init();
   
   StepperSetup();
-  
+  UltrasonicSetup();
   Serial.println("Setup finished");
 }
 
@@ -77,6 +85,12 @@ void StepperSetup()
   digitalWrite(dirLPin, HIGH);
   
 //  Serial.println("Stepper Setup Done");
+}
+
+void UltrasonicSetup()
+{
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
 }
 
 void loop() 
@@ -172,8 +186,11 @@ void PixySearch()
   //Serial.print(sig1X);
   //Serial.print(", ");
   //Serial.println(sig1Y);
- 
-  if (sig1X > 20)
+  if (sig1Count == 0 && sig2Count == 0)
+  {
+    //stepperDirection = 'r';
+  }
+  else if (sig1X > 20)
   {
     stepperDirection = 'r';
   }
@@ -183,10 +200,10 @@ void PixySearch()
   }
   else
   {
-    stepperDirection = 's';
+    stepperDirection = 'f';
   }
   
-  Serial.println(stepperDirection);
+  //Serial.println(stepperDirection);
 }
 
 void MoveSteppers()
@@ -220,6 +237,11 @@ void MoveSteppers()
 
 bool SetStepperDirection()
 {
+  //if (sonar.convert_cm(sonar.ping()) < 10)
+  //{
+  //  stepperDirection = 's';
+  //}
+  Serial.println(stepperDirection);
   if (stepperDirection != 's')
   {
     if (stepperDirection == 'f')
