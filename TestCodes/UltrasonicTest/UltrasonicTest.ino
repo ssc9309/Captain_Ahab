@@ -1,8 +1,14 @@
 #include <NewPing.h>
 #include <VirtualWire.h>
 
-int trigPin = A5;
-int echoPin = A4;
+//int trigPin = A5;
+//int echoPin = A4;
+
+//int trigPin = A2;
+//int echoPin = A1;
+int trigPin = 12;
+int echoPin = 13;
+
 int maxDistance = 700; //maximum distance you want to see in cm
 long duration, distance;
 
@@ -66,7 +72,7 @@ void loop() {
   
   //SendDataToPequod(String(sonar.convert_cm(uS)));
   //SendDataToPequod((char*)sonar.convert_cm(uS));
-  SendDataToPequod("Hello");
+  //SendDataToPequod("Hello");
   
   delay(1000);
   
