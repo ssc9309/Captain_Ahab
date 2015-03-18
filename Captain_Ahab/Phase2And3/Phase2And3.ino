@@ -18,6 +18,21 @@ pixy.blocks[i].print() A member function that prints the detected object informa
 #include <Pixy.h>
 #include <NewPing.h>
 
+
+bool searchingPhase = false;
+bool legoFound = false;
+bool legoCentered = false;
+bool baseFound = false;
+bool centerSpinFinished = false;
+bool searchFinished = false;
+
+
+
+bool approachingPhase = false;
+
+
+
+
 //Stepper Pin
 int m0RPin = 11;
 int m1RPin = 10;
@@ -40,11 +55,23 @@ char stepperDirection = 'r'; //s, f, l, r, b
 
 
 //ultrasonic variables.
-int trigPin = A5;
-int echoPin = A4;
+int trig1Pin = A5;
+int echo1Pin = A4;
+int trig2Pin = A2;
+int echo2Pin = A1;
+int trig3Pin = 13;
+int echo3Pin = 12;
+
 int maxDistance = 700; //maximum distance you want to see in cm
 long duration, distance;
-NewPing sonar(trigPin, echoPin, maxDistance);
+
+NewPing sonarR(trig1Pin, echo1Pin, maxDistance);
+NewPing sonarL(trig2Pin, echo2Pin, maxDistance);
+NewPing sonarF(trig3Pin, echo3Pin, maxDistance);
+
+long distanceR = -1;
+long distanceL = -1;
+long distanceF = -1;
 
 
 void setup() 
@@ -89,28 +116,105 @@ void StepperSetup()
 
 void UltrasonicSetup()
 {
-  pinMode(trigPin, OUTPUT);
-  pinMode(echoPin, INPUT);
+  pinMode(trig1Pin, OUTPUT);
+  pinMode(echo1Pin, INPUT);
+  pinMode(trig2Pin, OUTPUT);
+  pinMode(echo2Pin, INPUT);
+  pinMode(trig3Pin, OUTPUT);
+  pinMode(echo3Pin, INPUT);
 }
 
 void loop() 
 {
   // put your main code here, to run repeatedly:
 
-  //static int i = 0;
+  /*
+  UltrasonicCheck();
+  //Serial.print("L: ");
+  //Serial.println(distanceL);
+  //Serial.print("R: ");
+  //Serial.println(distanceR);
+  Serial.print("F: ");
+  Serial.println(distanceF);
+  Serial.println(" ");
+  delay(1000);
+  */
   
-  PixySearch();
+  
+  if (!searchingPhase && !approachingPhase)
+  {
+    searchingPhase = true;
+    //exit the searching stage when
+    //- lego found
+    //- base found
+    //- searched the open area, but no base or lego
+    //  - center and face open area.
+    //  - check open area.
+    
+    stepperDirection = 'r';
+    
+    while(searchingPhase)
+    {
+      //the ultrasonic will check the distance and set the direction it should go.
+      UltrasonicCheck();
+      //however, if the camera sees the objects, it will override it.
+      PixySearch();
+      
+      
+      //if lego is found in the camera, the PixySearch has already set the direction
+      if (legoFound)
+      {
+        //but, if the lego is found and distance <= 4 cm, stop and fire
+        if (legoCentered && distanceF <= 4)
+        {
+          //aim for to get ready to fire first.
+          //aim logic.
+          //look at the lego.
+          //turn left and right to the edges.
+          //see which edge is closer.
+          //move away from the closer edge to the center.
+          //face the lego again.
+          //then fire.
+          
+          stepperDirection = 's';
+          
+          //fire
+        }
+      }
+      //if the base is found, direction is set also by PixySearch. 
+      else if (baseFound)
+      {
+        if (distanceF <= 4)
+        {
+          //I shouldn't be here.
+          //if the base is this close, I have to see the lego.
+        }
+      }
+      else
+      {
+        if (!centerSpinFinished)
+        {
+          
+        }
+      }
+      
+      
+      
+      MoveSteppers();
+    }
+  }
   
   
+  //PixySearch();
+  //UltrasonicCheck();
   
-  MoveSteppers();
+  
+  //MoveSteppers();
 }
 
 void PixySearch()
 {
   long blocks;
-  
-  
   
   //0 for sig X will be center of the frame => x = 160
   //- is left of the frame, + is right of the frame
@@ -140,25 +244,31 @@ void PixySearch()
       
       for (int i = 0; i < blocks; i++)
       {
-        if (pixy.blocks[i].signature == 1)
+        //filter out anything top quarter of the screen (y = 0 to 50)
+        if (pixy.blocks[i].y > 50)
         {
-          sig1Found = true;
-          long tempX = pixy.blocks[i].x;
+          if (pixy.blocks[i].signature == 1)
+          {
+            sig1Found = true;
+
+            long tempX = pixy.blocks[i].x;
           //Serial.println("Raw x value");
           //Serial.println(pixy.blocks[i].x);
           //Serial.println(pixy.blocks[i].x - 160);
           //Serial.println(tempX);
           //Serial.println(tempX- 160);
-          sig1X += (tempX- 160);
-          sig1Y += pixy.blocks[i].y;
-          sig1Count++;
-        }
-        else if (pixy.blocks[i].signature == 2)
-        {
-          long tempX = pixy.blocks[i].x;
-          sig2X += (tempX- 160);
-          sig2Y += pixy.blocks[i].y;
-          sig2Count++;
+            sig1X += (tempX- 160);
+            sig1Y += pixy.blocks[i].y;
+            sig1Count++;
+          }
+          else if (pixy.blocks[i].signature == 2)
+          {
+            baseFound = true;
+            long tempX = pixy.blocks[i].x;
+            sig2X += (tempX- 160);
+            sig2Y += pixy.blocks[i].y;
+            sig2Count++;
+          }
         }
       }
     }
@@ -186,21 +296,50 @@ void PixySearch()
   //Serial.print(sig1X);
   //Serial.print(", ");
   //Serial.println(sig1Y);
+  
+  //set stepper direction depending on the cam observation
+  //if nothing is found, keep doing whatever you were doing before
   if (sig1Count == 0 && sig2Count == 0)
   {
+    legoFound = false;
+    baseFound = false;
     //stepperDirection = 'r';
   }
-  else if (sig1X > 20)
+  //if the lego has been located
+  else if (sig1Count > 0)
   {
-    stepperDirection = 'r';
+    legoFound = true;
+    legoFound = false;
+    
+    if (sig1X > 20)
+    {
+      stepperDirection = 'r';
+    }
+    else if (sig1X < -20)
+    {
+      stepperDirection = 'l';
+    }
+    else
+    {
+      legoCentered = true;
+      stepperDirection = 'f';
+    }
   }
-  else if (sig1X < -20)
+  else if (sig2Count > 0)
   {
-    stepperDirection = 'l';
-  }
-  else
-  {
-    stepperDirection = 'f';
+    baseFound = true;
+    if (sig2X > 20)
+    {
+      stepperDirection = 'r';
+    }
+    else if (sig2X < -20)
+    {
+      stepperDirection = 'l';
+    }
+    else
+    {
+      stepperDirection = 'f';
+    }
   }
   
   //Serial.println(stepperDirection);
@@ -283,5 +422,61 @@ bool SetStepperDirection()
   else
   {
     return false;
+  }
+}
+
+//change the sonarR, L, F depending on the current setup.
+void UltrasonicCheck()
+{
+  int checkRep = 5;
+  long temp;
+  
+  //sonar.ping_cm()
+  
+  distanceL = 0;
+  distanceR = 0;
+  distanceF = 0;
+  int divideL = 0;
+  int divideR = 0;
+  int divideF = 0;
+  
+  
+  for (int x= 0; x < checkRep; x++)
+  {
+    //if out of range, drop the value
+    temp = sonarL.ping_cm();
+    if (temp != 0)
+    {
+      distanceL += temp;
+      divideL++;
+    }
+    temp = sonarR.ping_cm();
+    if (temp != 0)
+    {
+      distanceR += temp;
+      divideR++;
+    }
+    temp = sonarF.ping_cm();
+    if (temp != 0)
+    {
+      distanceF += temp;
+      divideF++;
+    }
+    //distanceL += sonarL.ping_cm();
+    //distanceR += sonarR.ping_cm();
+    //distanceF += sonarF.ping_cm();
+  }
+  
+  if (divideL != 0)
+  {
+    distanceL /= divideL;
+  }
+  if (divideR != 0)
+  {
+    distanceR /= divideL;
+  }
+  if (divideF != 0)
+  {
+    distanceF /= divideL;
   }
 }
