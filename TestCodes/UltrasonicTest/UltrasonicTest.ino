@@ -1,13 +1,13 @@
 #include <NewPing.h>
 #include <VirtualWire.h>
 
-//int trigPin = A5;
-//int echoPin = A4;
+int trigPin = A5;
+int echoPin = A4;
 
 //int trigPin = A2;
 //int echoPin = A1;
-int trigPin = 13;
-int echoPin = 12;
+//int trigPin = 13;
+//int echoPin = 12;
 
 int maxDistance = 700; //maximum distance you want to see in cm
 long duration, distance;

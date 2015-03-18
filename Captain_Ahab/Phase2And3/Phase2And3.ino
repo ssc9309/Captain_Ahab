@@ -164,6 +164,81 @@ void loop()
       //if lego is found in the camera, the PixySearch has already set the direction
       if (legoFound)
       {
+        searchingPhase = false;
+        approachingPhase = true;
+        break;
+      }
+      //if the base is found, direction is set also by PixySearch. 
+      //if I am too close to the base, I must see the lego anyway
+      else if (baseFound)
+      {
+        searchingPhase = false;
+        approachingPhase = true;
+        break;
+        
+        //hank, this also goes to the approaching phase.
+        /*
+        if (distanceF <= 4)
+        {
+          //I shouldn't be here.
+          //if the base is this close, I have to see the lego.
+        }
+        */
+      }
+      else
+      {
+        //if the left and right is about 10-20 percent difference, and the front distance > 20.
+        //you are facing correctly
+        //hank. test for the distance sensing for angled wall.
+        if (abs(distanceL/distanceF) - 1 < 0.2 && distanceF > 20)
+        {
+          centerSpinFinished = true;
+        }
+        
+        //If i am not centered to the field B yet, turn.
+        if (!centerSpinFinished)
+        {
+          stepperDirection = 'r';
+          
+          //hank. check the steps if I have turned more than 360 degrees in the centerSpin stage.
+          //If I have done so, 
+        }
+        //If I am centered, go forward.
+        else
+        {
+          stepperDirection = 'f';
+          
+          searchingPhase = false;
+          approachingPhase = true;
+          break;
+          //try to go forward in the centre of the field b.
+          //compare left and right distances.
+          
+        }
+      }
+      
+      
+      
+      MoveSteppers();
+    }
+    
+    searchingPhase = false;
+    approachingPhase = true;
+  }
+  
+  //I am now in the approaching phase.
+  if (!searchingPhase && approachingPhase)
+  {
+    while(approachingPhase)
+    {
+      //the ultrasonic will check the distance and set the direction it should go.
+      UltrasonicCheck();
+      //however, if the camera sees the objects, it will override it.
+      PixySearch();
+      
+      //if searchingPhase found the lego, chase the lego and capture
+      if (legoFound)
+      {
         //but, if the lego is found and distance <= 4 cm, stop and fire
         if (legoCentered && distanceF <= 4)
         {
@@ -176,35 +251,44 @@ void loop()
           //face the lego again.
           //then fire.
           
-          stepperDirection = 's';
+          int prevDistance = distanceF;
+          int leftCount = 0;
+          int rightCount = 0;
+          
+          //turn left until you don't see the base anymore.
+          stepperDirection = 'l';
+          
+          while (abs(prevDistance - distanceF) > 10)
+          {
+            MoveSteppers();
+            leftCount++;
+          }
+          
+          //after seeing the left edge of the base, turn back to center
+          stepperDirection = 'r';
+          
+          
+          //stepperDirection = 's';
           
           //fire
+          //searchingPhase = false;
         }
       }
-      //if the base is found, direction is set also by PixySearch. 
-      else if (baseFound)
+      //if searchingPhase found the base, move towards base, find lego, and capture.
+      else if(baseFound)
       {
-        if (distanceF <= 4)
-        {
-          //I shouldn't be here.
-          //if the base is this close, I have to see the lego.
-        }
+        
       }
+      //I have not seen base or lego out of the 360 turn, I need to search as moving.
+      //I am on the hunt for base(rapid distance change) or lego
       else
       {
-        if (!centerSpinFinished)
-        {
-          
-        }
+        
       }
-      
-      
       
       MoveSteppers();
     }
   }
-  
-  
   //PixySearch();
   //UltrasonicCheck();
   
