@@ -2,7 +2,7 @@
 
 
 byte counter;
-int dataOutputPin = 13;
+int dataOutputPin = 2;
 
 
 void setup() {
@@ -37,13 +37,15 @@ void VirtualWireTest()
   
   vw_send((uint8_t *)msg, strlen(msg));
   vw_wait_tx();
+  Serial.println(msg);
   
-  delay(100);
+  delay(1000);
   
   msg = "a";
   
   vw_send((uint8_t *)msg, strlen(msg));
   vw_wait_tx();
   
-  delay(100);
+  Serial.println(msg);
+  delay(1000);
 }

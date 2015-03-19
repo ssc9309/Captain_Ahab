@@ -347,11 +347,21 @@ void PixySearch()
           }
           else if (pixy.blocks[i].signature == 2)
           {
-            baseFound = true;
+            //baseFound = true;
+            
+            //if the block is too high (above half line), filter it out.
+            
             long tempX = pixy.blocks[i].x;
-            sig2X += (tempX- 160);
-            sig2Y += pixy.blocks[i].y;
-            sig2Count++;
+            long tempY = pixy.blocks[i].y;
+            long tempH = pixy.blocks[i].height;
+            
+            if(tempY + (tempH/2) < 130)
+            {
+            
+              sig2X += (tempX- 160);
+              sig2Y += pixy.blocks[i].y;
+              sig2Count++;
+            }
           }
         }
       }
@@ -411,18 +421,23 @@ void PixySearch()
   }
   else if (sig2Count > 0)
   {
-    baseFound = true;
-    if (sig2X > 20)
+    //if the distance is too close but have not seen lego, this is not base
+    if (distanceF > 20)
     {
-      stepperDirection = 'r';
-    }
-    else if (sig2X < -20)
-    {
-      stepperDirection = 'l';
-    }
-    else
-    {
-      stepperDirection = 'f';
+    
+      baseFound = true;
+      if (sig2X > 20)
+      {
+        stepperDirection = 'r';
+      }
+      else if (sig2X < -20)
+      {
+        stepperDirection = 'l';
+      }
+      else
+      {
+        stepperDirection = 'f';
+      }
     }
   }
   

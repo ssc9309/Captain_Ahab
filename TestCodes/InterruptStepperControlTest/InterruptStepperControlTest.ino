@@ -1,4 +1,4 @@
-
+//this is a bad idea as it will be interrupting the program every 1kHZ just for motor control
 
 
 void setup() {
