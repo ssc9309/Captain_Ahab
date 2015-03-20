@@ -1,5 +1,5 @@
 #include <NewPing.h>
-//#include <VirtualWire.h>
+#include <VirtualWire.h>
 
 int trig1Pin = A5;
 int echo1Pin = A4;
@@ -9,15 +9,22 @@ int echo2Pin = A1;
 int trig3Pin = 13;
 int echo3Pin = 12;
 
+
+int testTrigPin = 2;
+int testEchoPin = 3;
+
+
 int maxDistance = 700; //maximum distance you want to see in cm
 long duration, distance;
 
 int transPin = 2;
 
 
-NewPing sonar1(trig1Pin, echo1Pin, maxDistance);
-NewPing sonar2(trig2Pin, echo2Pin, maxDistance);
-NewPing sonar3(trig3Pin, echo3Pin, maxDistance);
+NewPing sonarL(trig1Pin, echo1Pin, maxDistance);
+NewPing sonarR(trig2Pin, echo2Pin, maxDistance);
+NewPing sonarF(trig3Pin, echo3Pin, maxDistance);
+
+NewPing sonarTest(testTrigPin, testEchoPin, maxDistance);
 
 void setup() 
 {
@@ -31,18 +38,18 @@ void setup()
   //pinMode(trig3Pin, OUTPUT);
   //pinMode(echo3Pin, INPUT);
   
-  //TransmitterSetup();
+  TransmitterSetup();
   
 }
 
 
 void TransmitterSetup()
 {
-  //vw_set_ptt_inverted(true); // Required for DR3100
-  //vw_set_tx_pin(transPin);
-  //vw_setup(2000);	 // Bits per sec
+  vw_set_ptt_inverted(true); // Required for DR3100
+  vw_set_tx_pin(transPin);
+  vw_setup(2000);	 // Bits per sec
   
-  //SendDataToPequod("Setup");
+  SendPequodMessage("Setup");
 }
 
 void loop() {
@@ -78,13 +85,45 @@ void loop() {
   Serial.println(" cm");
   */
   
-  Serial.print("Sonar1: ");
-  Serial.println(sonar1.ping_cm());
-  Serial.print("Sonar2: ");
-  Serial.println(sonar2.ping_cm());
-  Serial.print("Sonar3: ");
-  Serial.println(sonar3.ping_cm());
-  Serial.println();
+  //Serial.print("Sonar1: ");
+  //Serial.println(sonar1.ping_cm());
+  //Serial.print("Sonar2: ");
+  //Serial.println(sonar2.ping_cm());
+  //Serial.print("Sonar3: ");
+  //Serial.println(sonar3.ping_cm());
+  //Serial.println();
+  
+  //Serial.print("SonarTest: ");
+  //Serial.println(sonarTest.ping_cm());
+  //Serial.println();
+  
+  int distanceL = sonarL.ping_cm();
+  
+  
+  String tempS = String(distanceL);
+  char tempC [10];
+
+      
+  tempS.toCharArray(tempC, 10);
+  SendPequodMessage("Left sonar");
+  SendPequodMessage(tempC);
+  
+  int distanceR = sonarR.ping_cm();
+  
+  tempS = String(distanceR);
+  tempC [10];
+    
+  tempS.toCharArray(tempC, 10);
+  SendPequodMessage("Right sonar");
+  SendPequodMessage(tempC);
+
+  int distanceF = sonarF.ping_cm();
+  tempS = String(distanceF);
+  tempC [10];
+    
+  tempS.toCharArray(tempC, 10);
+  SendPequodMessage("Forward sonar");
+  SendPequodMessage(tempC);
   
   //SendDataToPequod(String(sonar.convert_cm(uS)));
   //SendDataToPequod((char*)sonar.convert_cm(uS));
@@ -93,16 +132,17 @@ void loop() {
   delay(1000);
   
 }
-/*
-void SendDataToPequod(char *msg)
+
+void SendPequodMessage(char *msg)
 {
   Serial.print("Sending: ");
   Serial.println(msg);
   
   vw_send((uint8_t *)msg, strlen(msg));
   vw_wait_tx(); // Wait until the whole message is gone
+  delay(100);
 }
-*/
+
 /*
 void TestPins()
 {

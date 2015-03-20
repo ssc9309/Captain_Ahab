@@ -34,7 +34,7 @@ void setup()
   pinMode(stepRPin, OUTPUT);
   pinMode(dirRPin, OUTPUT);
   
-  digitalWrite(m0RPin, LOW);
+  digitalWrite(m0RPin, HIGH);
   digitalWrite(m1RPin, LOW);
   digitalWrite(dirRPin, LOW);
   
@@ -43,7 +43,7 @@ void setup()
   pinMode(stepLPin, OUTPUT);
   pinMode(dirLPin, OUTPUT);
   
-  digitalWrite(m0LPin, LOW);
+  digitalWrite(m0LPin, HIGH);
   digitalWrite(m1LPin, LOW);
   digitalWrite(dirLPin, HIGH);
 }
@@ -97,24 +97,30 @@ void loop()
     //Serial.println(analogRead(A1));
     
   // put your main code here, to run repeatedly:
-    digitalWrite(stepRPin, HIGH);
-    digitalWrite(stepLPin, HIGH);
-    delay(2);
+    for (int x = 0; x < 10*16; x++)
+    {
+      digitalWrite(stepRPin, HIGH);
+      digitalWrite(stepLPin, HIGH);
+      //delay(2);
+      delayMicroseconds(6000);///16);
     //delayMicroseconds(300/4);
     //delayMicroseconds(300/8 + 2*analogRead(A1));
     //300/8 + 2*242 full step was the fastest speed
     //0.0007 / 2 = 0.00035
-    digitalWrite(stepRPin, LOW);
-    digitalWrite(stepLPin, LOW);
-    delay(2);
+      digitalWrite(stepRPin, LOW);
+      digitalWrite(stepLPin, LOW);
+      //delay(2);
+      delayMicroseconds(6000);///16);
     //delayMicroseconds(300/4);
     //delayMicroseconds(300/8 + 2*analogRead(A1));
+    }
+    delay(100);
   }
   
   
   
   
-  
+  /*
   if (!turnedOnce)
   {
     int x = 0;
@@ -162,4 +168,5 @@ void loop()
     } 
     turnedOnce = true;
   }
+  */
 }

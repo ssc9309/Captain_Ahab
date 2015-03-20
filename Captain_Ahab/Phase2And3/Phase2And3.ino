@@ -14,13 +14,20 @@ pixy.blocks[i].angle The angle of the object detected object if the detected obj
 pixy.blocks[i].print() A member function that prints the detected object information to the serial port
 */
 
+/*
+//m0 low and m1 low mean Full step.
+//m0 high and m1 low mean Half step.
+//m0 high and m1 high mean 1/16th step.
+//m0 low and ml high mean 1/8th step
+*/
+
 #include <SPI.h>
 #include <Pixy.h>
 #include <NewPing.h>
 #include <VirtualWire.h>
 
 
-bool searchingPhase = false;
+bool turningPhase = false;
 bool legoFound = false;
 bool legoCentered = false;
 bool baseFound = false;
@@ -31,8 +38,8 @@ bool searchFinished = false;
 
 
 bool approachingPhase = false;
-
-
+int leftDistanceArray[10];
+int rightDistanceArray[10];
 
 
 //Stepper Pin
@@ -45,9 +52,6 @@ int m0LPin = 4;
 int m1LPin = 5;
 int stepLPin = 6;
 int dirLPin = 7;
-
-
-
 
 
 
@@ -67,14 +71,13 @@ int echo3Pin = 12;
 int maxDistance = 700; //maximum distance you want to see in cm
 long duration, distance;
 
-NewPing sonarR(trig1Pin, echo1Pin, maxDistance);
-NewPing sonarL(trig2Pin, echo2Pin, maxDistance);
+NewPing sonarL(trig1Pin, echo1Pin, maxDistance);
+NewPing sonarR(trig2Pin, echo2Pin, maxDistance);
 NewPing sonarF(trig3Pin, echo3Pin, maxDistance);
 
-long distanceR = -1;
-long distanceL = -1;
-long distanceF = -1;
-
+double distanceR = -1;
+double distanceL = -1;
+double distanceF = -1;
 
 //Transmitter Setep
 int transmitterPin = 2;
@@ -84,15 +87,42 @@ void setup()
 {
   // put your setup code here, to run once:
   
-  Serial.begin(9600);
-  Serial.println("Setup begin");
+  //Serial.begin(9600);
+  //Serial.println("Setup begin");
   
   pixy.init();
   
   StepperSetup();
   UltrasonicSetup();
   TransmitterSetup();
-  Serial.println("Setup finished");
+  DistanceDataSetup();
+  //Serial.println("Setup finished");
+  
+  //turningPhase = false;
+  //approachingPhase = false;
+  
+  turningPhase = false;
+  legoFound = false;
+  legoCentered = false;
+  baseFound = false;
+  centerSpinFinished = false;
+  centerSpinStartTime = 0;
+  searchFinished = false;
+
+
+
+  approachingPhase = false;
+  
+  
+  digitalWrite(m0RPin, LOW);
+  digitalWrite(m1RPin, LOW);
+  digitalWrite(dirRPin, LOW);
+  
+  digitalWrite(m0LPin, LOW);
+  digitalWrite(m1LPin, LOW);
+  digitalWrite(dirLPin, HIGH);
+  
+  SendPequodMessage("Setup Finished");
 }
 
 
@@ -138,13 +168,46 @@ void TransmitterSetup()
   vw_set_tx_pin(transmitterPin); //Pin 2 is connected to "Digital Output" of receiver
 }
 
+void DistanceDataSetup()
+{
+  
+  for (int x = 0; x < sizeof(leftDistanceArray); x++)
+  {
+    leftDistanceArray[x] = -1;
+    rightDistanceArray[x] = -1;
+  }
+  
+}
+
 void loop() 
 {
   // put your main code here, to run repeatedly:
-
-  if (!searchingPhase && !approachingPhase)
+  //SendPequodMessage("Looping...");
+  
+  //turningPhase = false;
+  //approachingPhase = false;
+  /*
+  if (turningPhase)
   {
-    searchingPhase = true;
+    SendPequodMessage("Turning Phase is on");
+  }
+  else
+  {
+    SendPequodMessage("Turning Phase is off");
+  }
+  
+  if (approachingPhase)
+  {
+    SendPequodMessage("Approaching Phase is on");
+  }
+  else
+  {
+    SendPequodMessage("Approaching Phase is off");
+  }
+  */
+  if (!turningPhase && !approachingPhase)
+  {
+    turningPhase = true;
     //exit the searching stage when
     //- lego found
     //- base found
@@ -154,15 +217,17 @@ void loop()
     
     stepperDirection = 'r';
     
-    SendPequodMessage("Searching Phase Start");
-    while(searchingPhase)
+    SendPequodMessage("Turning Phase Start");
+    
+    //Hank, I changed my mind. I just want to center myself and find the base using ultrasonic.
+    while(turningPhase)
     {
       //the ultrasonic will check the distance and set the direction it should go.
       UltrasonicCheck();
       //however, if the camera sees the objects, it will override it.
-      PixySearch();
+      //PixySearch();
       
-      
+      /*
       //if lego is found in the camera, the PixySearch has already set the direction
       if (legoFound)
       {
@@ -181,21 +246,25 @@ void loop()
         break;
         
         //hank, this also goes to the approaching phase.
-        /*
-        if (distanceF <= 4)
-        {
+        
+        //if (distanceF <= 4)
+        //{
           //I shouldn't be here.
           //if the base is this close, I have to see the lego.
-        }
-        */
+        //}
+        
       }
       else
       {
         //if the left and right is about 10-20 percent difference, and the front distance > 20.
         //you are facing correctly
         //hank. test for the distance sensing for angled wall.
-        if (abs(distanceL/distanceF) - 1 < 0.2 && distanceF > 20)
+        
+        
+        if (abs(distanceL/distanceR) - 1 < 0.2 && distanceF > 10)
         {
+//          String temp = String()
+          SendPequodMessage("I am centered");
           centerSpinFinished = true;
         }
         
@@ -235,20 +304,93 @@ void loop()
           //compare left and right distances.
         }
       }
+      */
+      
+      String tempS = String(distanceL);
+      char tempC [10];
+      /*
+      
+      tempS.toCharArray(tempC, 10);
+      SendPequodMessage("Left sonar");
+      SendPequodMessage(tempC);
+      */
+      
+      tempS = String(distanceL);
+      tempS.toCharArray(tempC, 10);
+      SendPequodMessage("Left sonar");
+      SendPequodMessage(tempC);
+      
+      
+      tempS = String(distanceF);
+      tempS.toCharArray(tempC, 10);
+      SendPequodMessage("Forward sonar");
+      SendPequodMessage(tempC);
+      
+      
+      tempS = String(distanceR);
+      tempS.toCharArray(tempC, 10);
+      SendPequodMessage("Right sonar");
+      SendPequodMessage(tempC);
+      
+      //SendPequodMessage(distanceL);
+      
+      
+      if (abs((distanceL/distanceR) - 1) < 0.15 && distanceF > 20)
+      {
+//          String temp = String()
+        SendPequodMessage("I am centered");
+        centerSpinFinished = true;
+      }
+      
+      if (!centerSpinFinished)
+      {
+        stepperDirection = 'r';
+      
+        if (centerSpinStartTime == 0)
+        {
+          centerSpinStartTime = millis();
+        }
+        else
+        {
+            //i have been spinning for more than 10 seconds.
+            //give up.
+          if (millis() - centerSpinStartTime > 10000)
+          {
+            SendPequodMessage("I've been turning for more than 10 seconds");
+              //
+              //hank. check the steps if I have turned more than 360 degrees in the centerSpin stage.
+              //If I have done so, 
+          }
+        }
+      }
+        //If I am centered, go forward.
+      else
+      {
+        SendPequodMessage("Center Spin finished");
+          
+        stepperDirection = 'f';
+          
+        turningPhase = false;
+        approachingPhase = true;
+        break;
+        //try to go forward in the centre of the field b.
+        //compare left and right distances.
+      }
       
       
       
-      MoveSteppers();
+      
+      MoveSteppers('t', false);
     }
     
     SendPequodMessage("Searching Phase End");
     
-    searchingPhase = false;
+    turningPhase = false;
     approachingPhase = true;
   }
   
   //I am now in the approaching phase.
-  if (!searchingPhase && approachingPhase)
+  if (!turningPhase && approachingPhase)
   {
     SendPequodMessage("Approaching Phase start");
     
@@ -266,6 +408,7 @@ void loop()
         //but, if the lego is found and distance <= 4 cm, stop and fire
         if (legoCentered && distanceF <= 4)
         {
+          SendPequodMessage("Centering for Lego");
           //aim for to get ready to fire first.
           //aim logic.
           //look at the lego.
@@ -283,7 +426,7 @@ void loop()
           stepperDirection = 'l';
           while (abs(prevDistance - distanceF) > 10)
           {
-            MoveSteppers();
+            MoveSteppers('t', false);
             UltrasonicCheck();
             leftCount++;
           }
@@ -292,14 +435,14 @@ void loop()
           stepperDirection = 'r';
           for (int x = 0; x < leftCount; x++)
           {
-            MoveSteppers();
+            MoveSteppers('t', false);
           }
           
           //Turn right until you don't see the base anymore
           prevDistance = distanceF;
           while (abs(prevDistance - distanceF) > 10)
           {
-            MoveSteppers();
+            MoveSteppers('t', false);
             UltrasonicCheck();
             rightCount++;
           }
@@ -307,6 +450,12 @@ void loop()
           //stop once you are at the edge of the right side.
           stepperDirection = 's';
           
+          SendPequodMessage("I should be facing right side of base");
+          
+          //current placeholder to stop it from doing anything
+          approachingPhase = false;
+          turningPhase = true;     
+          SendPequodMessage("End of approacing phase.");
           //stepperDirection = 's';
           
           //fire
@@ -322,11 +471,62 @@ void loop()
       //I am on the hunt for base(rapid distance change) or lego
       else
       {
-        stepperDirection = 's';
-        SendPequodMessage("I turned for 10 sec and don't see anything");
+        SendPequodMessage("Looking around");
+        stepperDirection = 'f';
+        
+        //selfAlignFlag = true;
+        
+        //if the base has been detected on a side
+        char sideLetter = BlindSideBaseCheck(distanceL, distanceR);
+        
+        String tmpS = String(sideLetter);
+        char tmpC[10];
+        tmpS.toCharArray(tmpC, 10);
+        SendPequodMessage(tmpC);
+        
+        if (sideLetter != 'n') 
+        {
+          SendPequodMessage("Found a base to the side");
+          //move forward to align yourself to the middle of the base
+          for (int x = 0; x < 4; x++)
+          {
+            MoveSteppers('f', false);
+          }
+          
+          SendPequodMessage("Moved to middle. Turning now.");
+          
+          
+          /*
+          tempS = String(distanceL);
+      tempS.toCharArray(tempC, 10);
+      SendPequodMessage("Left sonar");
+      SendPequodMessage(tempC);
+          */
+          
+          stepperDirection = sideLetter;
+          
+          //this better be a 90 degree turn
+          for (int x = 0; x < 4; x++)
+          {
+            MoveSteppers('t', false);
+          }
+          
+          
+          
+          //move forward until camera sees the lego
+          
+          while(!legoFound)
+          {
+            PixySearch();
+            stepperDirection = 'f';
+            MoveSteppers('f', false);
+          }
+          
+          SendPequodMessage("I see the lego");
+        }
       }
       
-      MoveSteppers();
+      MoveSteppers('f', true);
     }
     
     SendPequodMessage("Approachig Phase end");
@@ -336,6 +536,122 @@ void loop()
   
   
   //MoveSteppers();
+}
+
+//will return 'l' (left), 'r' (right), 'n' (none)
+
+
+int prevLeftDistance = -1;
+int prevRightDistance = -1;
+
+char BlindSideBaseCheck(int distanceL, int distanceR)
+{
+  if (prevLeftDistance == -1)
+  {
+    SendPequodMessage("Initializing blind side logic");
+    prevLeftDistance = distanceL;
+    prevRightDistance = distanceR;
+  }
+  else
+  {
+    SendPequodMessage("Calculating Blind side ");
+    if (abs(prevLeftDistance - distanceL) > 40)
+    {
+      SendPequodMessage("bs: turn left");
+      return 'l';
+    }
+    else if (abs(prevRightDistance - distanceR) > 40)
+    {
+      SendPequodMessage("bs: turn right");
+      return 'r';
+    }
+    else
+    {
+      SendPequodMessage("bs: don't turn");
+      prevRightDistance = distanceR;
+      prevLeftDistance = distanceL;
+      
+      return 'n';
+    }
+  }
+  
+  return 'n';
+  SendPequodMessage("bs: how am i here?");
+  
+  
+  /*
+  for (int i = 0; i < sizeof(leftDistanceArray); i++)
+  {
+    if (leftDistanceArray[i] == -1)
+    {
+      leftDistanceArray[i] = distanceL;
+      rightDistanceArray[i] = distanceR;
+      break;
+    }
+  }
+  
+  if (sizeof(leftDistanceArray) > 1)
+  {
+    int prevLeftDistance = -1;
+    int currentLeftDistance = -1;
+    int prevRightDistance = -1;
+    int currentRightDistance = -1;
+    
+    for (int i = 0; i < sizeof(leftDistanceArray); i++)
+    {
+      currentLeftDistance = leftDistanceArray[i];
+      currentRightDistance = rightDistanceArray[i];
+      
+      if (prevLeftDistance == -1)
+      {
+        prevLeftDistance = currentLeftDistance;
+        prevRightDistance = currentRightDistance;
+      }
+      else
+      {
+        if (abs(currentLeftDistance - prevLeftDistance) > 40)
+        {
+
+          //base detected on left side
+          return 'l';
+          /*
+          //void MoveSteppers(char movement, bool selfAlignFlag)
+          for (int x = 0; x < 4; x++)
+          {
+            MoveSteppers('f', false);
+          }
+          stepperDirection = "l";
+          for (int x = 0; x < 4; x++)
+          {
+            MoveSteppers('t', false);
+          }
+          */
+          /*
+        }
+        
+        else if (abs(currentRightDistance - prevRightDistance) > 40)
+        {
+          //base detected on right side
+          return 'r';
+          /*
+          for (int x = 0; x < 4; x++)
+          {
+            MoveSteppers('f', false);
+          }
+          stepperDirection = "r";
+          for (int x = 0; x < 4; x++)
+          {
+            MoveSteppers('t', false);
+          }
+          */
+          /*
+        }
+      }
+    }
+    
+    return 'n';
+  }
+  */
 }
 
 void PixySearch()
@@ -367,7 +683,7 @@ void PixySearch()
     
     //Serial.print("Num of blocks: ");
     //Serial.println(blocks);
-      
+      SendPequodMessage("I see blocks");
       for (int i = 0; i < blocks; i++)
       {
         //filter out anything top quarter of the screen (y = 0 to 50)
@@ -487,8 +803,48 @@ void PixySearch()
   //Serial.println(stepperDirection);
 }
 
-void MoveSteppers()
+//movement will be either 't' (turning) or 'f' (forward)
+//when forward, move more
+void MoveSteppers(char movement, bool selfAlignFlag)
 {
+  //if align flag is on, try to swerve to center
+  if (selfAlignFlag)
+  {
+    //if I am about centered, go both at half stepping
+    if (abs((distanceL/distanceR) - 1) < 0.15)
+    {
+      digitalWrite(m0RPin, HIGH);
+      digitalWrite(m1RPin, LOW);  
+      digitalWrite(m0LPin, HIGH);
+      digitalWrite(m1LPin, LOW);
+    }
+    //If I am cloer to right side, turn left my increasing the microstepping on left side
+    //increasing the stepping will slow down the motor
+    else if (distanceL > distanceR)
+    {
+      digitalWrite(m0RPin, HIGH);
+      digitalWrite(m1RPin, LOW);  
+      digitalWrite(m0LPin, LOW);
+      digitalWrite(m1LPin, HIGH);
+    }
+    //vice versa
+    else if (distanceL < distanceR)
+    {
+      digitalWrite(m0RPin, LOW);
+      digitalWrite(m1RPin, HIGH);  
+      digitalWrite(m0LPin, HIGH);
+      digitalWrite(m1LPin, LOW);
+    }
+  }
+  else
+  {
+    digitalWrite(m0RPin, HIGH);
+    digitalWrite(m1RPin, LOW);  
+    digitalWrite(m0LPin, HIGH);
+    digitalWrite(m1LPin, LOW);
+  }
+
+  
   //static bool pulseHigh = 0;
   //static unsigned long timeStamp = 0;
   
@@ -500,19 +856,37 @@ void MoveSteppers()
   //true if not stop
   if (SetStepperDirection())
   {
-    for (int x = 0; x < 20; x++)
+    if (movement == 'f')
     {
-      digitalWrite(stepRPin, HIGH);
-      digitalWrite(stepLPin, HIGH);
+      for (int x = 0; x < 80; x++)
+      {
+        digitalWrite(stepRPin, HIGH);
+        digitalWrite(stepLPin, HIGH);
 
-      delay(4);
+        delayMicroseconds(6000);
 
-      digitalWrite(stepRPin, LOW);
-      digitalWrite(stepLPin, LOW);
+        digitalWrite(stepRPin, LOW);
+        digitalWrite(stepLPin, LOW);
       
-      delay(4);
-
+        delayMicroseconds(6000);
+      }
     }
+    else
+    {
+      for (int x = 0; x < 40; x++)
+      {
+        digitalWrite(stepRPin, HIGH);
+        digitalWrite(stepLPin, HIGH);
+
+        delayMicroseconds(6000);
+
+        digitalWrite(stepRPin, LOW);
+        digitalWrite(stepLPin, LOW);
+      
+        delayMicroseconds(6000);
+      }
+    }
+    
   }
 }
 
@@ -522,7 +896,7 @@ bool SetStepperDirection()
   //{
   //  stepperDirection = 's';
   //}
-  Serial.println(stepperDirection);
+  //Serial.println(stepperDirection);
   if (stepperDirection != 's')
   {
     if (stepperDirection == 'f')
@@ -615,11 +989,11 @@ void UltrasonicCheck()
   }
   if (divideR != 0)
   {
-    distanceR /= divideL;
+    distanceR /= divideR;
   }
   if (divideF != 0)
   {
-    distanceF /= divideL;
+    distanceF /= divideF;
   }
 }
 
@@ -627,4 +1001,5 @@ void SendPequodMessage(char *msg)
 {  
   vw_send((uint8_t *)msg, strlen(msg));
   vw_wait_tx();
+  delay(100);
 }
