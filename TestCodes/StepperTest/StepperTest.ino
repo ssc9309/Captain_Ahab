@@ -52,11 +52,50 @@ bool turnedOnce = false;
 
 void loop() 
 {
+  /*
+  for (int x = 0; x < 5; x++)
+  {
+    digitalWrite(dirRPin, LOW);
+    digitalWrite(dirLPin, HIGH);
+    
+    for (int f = 0; f < 10; f++)
+    {
+      digitalWrite(stepRPin, HIGH);
+      digitalWrite(stepLPin, HIGH);
+      delay(2);
+    //delayMicroseconds(300/4);
+    //delayMicroseconds(300/8 + 2*analogRead(A1));
+    //300/8 + 2*242 full step was the fastest speed
+    //0.0007 / 2 = 0.00035
+      digitalWrite(stepRPin, LOW);
+      digitalWrite(stepLPin, LOW);
+      delay(2);
+    }
+    
+    //backward
+    digitalWrite(dirRPin, HIGH);
+    digitalWrite(dirLPin, LOW);
+    
+    for (int b = 0; b < 10; b++)
+    {
+      digitalWrite(stepRPin, HIGH);
+      digitalWrite(stepLPin, HIGH);
+      delay(2);
+    //delayMicroseconds(300/4);
+    //delayMicroseconds(300/8 + 2*analogRead(A1));
+    //300/8 + 2*242 full step was the fastest speed
+    //0.0007 / 2 = 0.00035
+      digitalWrite(stepRPin, LOW);
+      digitalWrite(stepLPin, LOW);
+      delay(2);
+    }
+  }
+  */
   
-  while (millis() < 2000)
+  while (millis() < 5000)
   {
     //Serial.println(analogRead(A1));
-  
+    
   // put your main code here, to run repeatedly:
     digitalWrite(stepRPin, HIGH);
     digitalWrite(stepLPin, HIGH);

@@ -13,6 +13,7 @@ void setup()
 void loop() 
 {
   // put your main code here, to run repeatedly:
+  /*
   if (prevState != digitalRead(tiltPin))
   {
     prevState = digitalRead(tiltPin);
@@ -21,4 +22,20 @@ void loop()
       Serial.println("Take a mooommeeennnttt");
     }
   }
+  */
+  
+  if (digitalRead(tiltPin))
+  {
+    Serial.print(millis());
+    Serial.print(": ");
+    Serial.println("I am so high right now bro");
+  }
+  else
+  {
+    Serial.print(millis());
+    Serial.print(": ");
+    Serial.println("I am off");
+  }
+  
+  delay(250);
 }

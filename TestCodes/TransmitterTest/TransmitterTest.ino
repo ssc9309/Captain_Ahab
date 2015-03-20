@@ -1,6 +1,6 @@
 #include <VirtualWire.h>
 
-
+     
 byte counter;
 int dataOutputPin = 2;
 
@@ -33,7 +33,7 @@ void VirtualWireTest()
 {
   char *msg;
   
-  msg = "1";
+  msg = "Take a moomennnttt";
   
   vw_send((uint8_t *)msg, strlen(msg));
   vw_wait_tx();
@@ -41,7 +41,7 @@ void VirtualWireTest()
   
   delay(1000);
   
-  msg = "a";
+  msg = "TOORRRRQQUEEE";
   
   vw_send((uint8_t *)msg, strlen(msg));
   vw_wait_tx();

@@ -85,8 +85,10 @@ void VirtualWareTest()
     {
       
       // Print message received in buffer through this loop
-      Serial.print(buf[i]);
-      Serial.print(" ");
+      char temp = buf[i];
+      //Serial.print(buf[i]);
+      Serial.print(temp);
+      //Serial.print(" ");
       //add space to distinguish characters from each other if showing ASCII decimal #
       //Serial.print(" "); 
       
@@ -117,8 +119,5 @@ void VirtualWareTest()
   {
     Serial.println(second);
     second = millis()/1000;
-  }
-  
-  
-  
+  } 
 }

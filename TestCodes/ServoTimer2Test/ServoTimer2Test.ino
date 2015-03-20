@@ -18,6 +18,11 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
+  
+  
+  
+  StopInPosition();
+  /*
   for(int x = 600; x < 2400; x++)
   {
     //grabberServo.write(x);
@@ -34,4 +39,10 @@ void loop() {
     //Serial.println(x);
     delay(1);
   }
+  */
+}
+
+void StopInPosition()
+{
+  testServo.write((2400+600)/2);
 }

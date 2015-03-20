@@ -17,6 +17,7 @@ pixy.blocks[i].print() A member function that prints the detected object informa
 #include <SPI.h>
 #include <Pixy.h>
 #include <NewPing.h>
+#include <VirtualWire.h>
 
 
 bool searchingPhase = false;
@@ -24,6 +25,7 @@ bool legoFound = false;
 bool legoCentered = false;
 bool baseFound = false;
 bool centerSpinFinished = false;
+long centerSpinStartTime = 0;
 bool searchFinished = false;
 
 
@@ -74,6 +76,10 @@ long distanceL = -1;
 long distanceF = -1;
 
 
+//Transmitter Setep
+int transmitterPin = 2;
+
+
 void setup() 
 {
   // put your setup code here, to run once:
@@ -85,6 +91,7 @@ void setup()
   
   StepperSetup();
   UltrasonicSetup();
+  TransmitterSetup();
   Serial.println("Setup finished");
 }
 
@@ -124,23 +131,17 @@ void UltrasonicSetup()
   pinMode(echo3Pin, INPUT);
 }
 
+void TransmitterSetup()
+{
+  vw_set_ptt_inverted(true); // Required for DR3100
+  vw_setup(2000);	 // Bits per sec
+  vw_set_tx_pin(transmitterPin); //Pin 2 is connected to "Digital Output" of receiver
+}
+
 void loop() 
 {
   // put your main code here, to run repeatedly:
 
-  /*
-  UltrasonicCheck();
-  //Serial.print("L: ");
-  //Serial.println(distanceL);
-  //Serial.print("R: ");
-  //Serial.println(distanceR);
-  Serial.print("F: ");
-  Serial.println(distanceF);
-  Serial.println(" ");
-  delay(1000);
-  */
-  
-  
   if (!searchingPhase && !approachingPhase)
   {
     searchingPhase = true;
@@ -153,6 +154,7 @@ void loop()
     
     stepperDirection = 'r';
     
+    SendPequodMessage("Searching Phase Start");
     while(searchingPhase)
     {
       //the ultrasonic will check the distance and set the direction it should go.
@@ -164,6 +166,7 @@ void loop()
       //if lego is found in the camera, the PixySearch has already set the direction
       if (legoFound)
       {
+        SendPequodMessage("Lego Found");
         searchingPhase = false;
         approachingPhase = true;
         break;
@@ -172,6 +175,7 @@ void loop()
       //if I am too close to the base, I must see the lego anyway
       else if (baseFound)
       {
+        SendPequodMessage("Base Found");
         searchingPhase = false;
         approachingPhase = true;
         break;
@@ -199,13 +203,29 @@ void loop()
         if (!centerSpinFinished)
         {
           stepperDirection = 'r';
+      
+          if (centerSpinStartTime == 0)
+          {
+            centerSpinStartTime = millis();
+          }
+          else
+          {
+            //i have been spinning for more than 10 seconds.
+            //give up.
+            if (millis() - centerSpinStartTime > 10000)
+            {
+              //
+              //hank. check the steps if I have turned more than 360 degrees in the centerSpin stage.
+              //If I have done so, 
+            }
+          }
           
-          //hank. check the steps if I have turned more than 360 degrees in the centerSpin stage.
-          //If I have done so, 
         }
         //If I am centered, go forward.
         else
         {
+          SendPequodMessage("Center Spin finished");
+          
           stepperDirection = 'f';
           
           searchingPhase = false;
@@ -213,7 +233,6 @@ void loop()
           break;
           //try to go forward in the centre of the field b.
           //compare left and right distances.
-          
         }
       }
       
@@ -222,6 +241,8 @@ void loop()
       MoveSteppers();
     }
     
+    SendPequodMessage("Searching Phase End");
+    
     searchingPhase = false;
     approachingPhase = true;
   }
@@ -229,6 +250,8 @@ void loop()
   //I am now in the approaching phase.
   if (!searchingPhase && approachingPhase)
   {
+    SendPequodMessage("Approaching Phase start");
+    
     while(approachingPhase)
     {
       //the ultrasonic will check the distance and set the direction it should go.
@@ -239,6 +262,7 @@ void loop()
       //if searchingPhase found the lego, chase the lego and capture
       if (legoFound)
       {
+        SendPequodMessage("Following Lego");
         //but, if the lego is found and distance <= 4 cm, stop and fire
         if (legoCentered && distanceF <= 4)
         {
@@ -257,16 +281,31 @@ void loop()
           
           //turn left until you don't see the base anymore.
           stepperDirection = 'l';
-          
           while (abs(prevDistance - distanceF) > 10)
           {
             MoveSteppers();
+            UltrasonicCheck();
             leftCount++;
           }
           
           //after seeing the left edge of the base, turn back to center
           stepperDirection = 'r';
+          for (int x = 0; x < leftCount; x++)
+          {
+            MoveSteppers();
+          }
           
+          //Turn right until you don't see the base anymore
+          prevDistance = distanceF;
+          while (abs(prevDistance - distanceF) > 10)
+          {
+            MoveSteppers();
+            UltrasonicCheck();
+            rightCount++;
+          }
+          
+          //stop once you are at the edge of the right side.
+          stepperDirection = 's';
           
           //stepperDirection = 's';
           
@@ -277,17 +316,20 @@ void loop()
       //if searchingPhase found the base, move towards base, find lego, and capture.
       else if(baseFound)
       {
-        
+        SendPequodMessage("Following Lego");
       }
       //I have not seen base or lego out of the 360 turn, I need to search as moving.
       //I am on the hunt for base(rapid distance change) or lego
       else
       {
-        
+        stepperDirection = 's';
+        SendPequodMessage("I turned for 10 sec and don't see anything");
       }
       
       MoveSteppers();
     }
+    
+    SendPequodMessage("Approachig Phase end");
   }
   //PixySearch();
   //UltrasonicCheck();
@@ -329,6 +371,7 @@ void PixySearch()
       for (int i = 0; i < blocks; i++)
       {
         //filter out anything top quarter of the screen (y = 0 to 50)
+        //hank, change this value once rover is done.
         if (pixy.blocks[i].y > 50)
         {
           if (pixy.blocks[i].signature == 1)
@@ -341,7 +384,7 @@ void PixySearch()
           //Serial.println(pixy.blocks[i].x - 160);
           //Serial.println(tempX);
           //Serial.println(tempX- 160);
-            sig1X += (tempX- 160);
+            sig1X += (tempX - 160);
             sig1Y += pixy.blocks[i].y;
             sig1Count++;
           }
@@ -355,10 +398,9 @@ void PixySearch()
             long tempY = pixy.blocks[i].y;
             long tempH = pixy.blocks[i].height;
             
-            if(tempY + (tempH/2) < 130)
+            if(tempY + (tempH/2) > 70)
             {
-            
-              sig2X += (tempX- 160);
+              sig2X += (tempX - 160);
               sig2Y += pixy.blocks[i].y;
               sig2Count++;
             }
@@ -368,6 +410,7 @@ void PixySearch()
     }
   }
   
+  //The following two will average the sum of X and Y signals
   if (sig1Count > 0)
   {
     //Serial.println("Before process");
@@ -403,7 +446,6 @@ void PixySearch()
   else if (sig1Count > 0)
   {
     legoFound = true;
-    legoFound = false;
     
     if (sig1X > 20)
     {
@@ -422,9 +464,10 @@ void PixySearch()
   else if (sig2Count > 0)
   {
     //if the distance is too close but have not seen lego, this is not base
-    if (distanceF > 20)
-    {
+    //hank I don't need ths filter. Ben's height filter will be sufficient... i think.
     
+    //if (distanceF > 20)
+    //{
       baseFound = true;
       if (sig2X > 20)
       {
@@ -438,7 +481,7 @@ void PixySearch()
       {
         stepperDirection = 'f';
       }
-    }
+    //}
   }
   
   //Serial.println(stepperDirection);
@@ -457,7 +500,7 @@ void MoveSteppers()
   //true if not stop
   if (SetStepperDirection())
   {
-    for (int x = 0; x < 10; x++)
+    for (int x = 0; x < 20; x++)
     {
       digitalWrite(stepRPin, HIGH);
       digitalWrite(stepLPin, HIGH);
@@ -578,4 +621,10 @@ void UltrasonicCheck()
   {
     distanceF /= divideL;
   }
+}
+
+void SendPequodMessage(char *msg)
+{  
+  vw_send((uint8_t *)msg, strlen(msg));
+  vw_wait_tx();
 }

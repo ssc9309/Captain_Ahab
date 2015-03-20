@@ -80,10 +80,10 @@ void loop() {
   
   Serial.print("Sonar1: ");
   Serial.println(sonar1.ping_cm());
-  //Serial.print("Sonar2: ");
-  //Serial.println(sonar2.ping_cm());
-  //Serial.print("Sonar3: ");
-  //Serial.println(sonar3.ping_cm());
+  Serial.print("Sonar2: ");
+  Serial.println(sonar2.ping_cm());
+  Serial.print("Sonar3: ");
+  Serial.println(sonar3.ping_cm());
   Serial.println();
   
   //SendDataToPequod(String(sonar.convert_cm(uS)));
